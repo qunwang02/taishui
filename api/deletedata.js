@@ -9,15 +9,26 @@ function cors(res) {
 }
 
 export default async function handler(req, res) {
+  // 确保始终返回JSON
+  res.setHeader('Content-Type', 'application/json');
+  
   cors(res);
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "DELETE") return res.status(405).json({ error: "Method Not Allowed" });
+  if (req.method === "OPTIONS") {
+    return res.status(200).json({ ok: true });
+  }
+  if (req.method !== "DELETE") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
 
   try {
+    if (!process.env.NOTION_API_KEY) {
+      return res.status(500).json({ ok: false, error: "环境变量 NOTION_API_KEY 未设置" });
+    }
+    
     const { id } = req.body || {};
     
     if (!id) {
-      return res.status(400).json({ error: "缺少必填字段：id" });
+      return res.status(400).json({ ok: false, error: "缺少必填字段：id" });
     }
 
     await notion.pages.update({
@@ -27,7 +38,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, message: "删除成功" });
   } catch (e) {
-    const msg = e?.body?.message || e.message || String(e);
-    return res.status(500).json({ error: msg });
+    console.error("deleteData error:", e);
+    // 确保返回JSON格式错误
+    return res.status(500).json({
+      ok: false,
+      error: "删除数据失败",
+      details: String(e).substring(0, 100) // 只返回前100个字符，避免HTML内容
+    });
   }
 }
