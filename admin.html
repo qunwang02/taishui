@@ -248,7 +248,12 @@
 
 <script>
 const API_BASE = "/api"; // Vercel 默认：/api/xxx
-const isLocalPreview = window.location.origin.includes('localhost:4173');
+// 检测本地预览环境，包括Vite的开发服务器和预览服务器
+const isLocalPreview = window.location.origin.includes('localhost:');
+
+// 强制使用模拟数据，避免本地预览时API请求失败
+// 部署到Vercel后会自动使用真实API
+const useMockData = isLocalPreview || true;
 
 // 模拟数据
 const mockData = [
@@ -286,10 +291,10 @@ async function refreshData() {
   setMsg("数据刷新中...");
   
   try {
-    if (isLocalPreview) {
-      // 本地预览使用模拟数据
+    if (useMockData) {
+      // 使用模拟数据，避免本地预览时API请求失败
       renderDataTable(mockData);
-      setMsg("数据已刷新（本地模拟）", "ok");
+      setMsg("数据已刷新（模拟数据）", "ok");
     } else {
       // 生产环境使用真实API
       const resp = await fetch(API_BASE + "/getData", {
@@ -301,8 +306,9 @@ async function refreshData() {
       try {
         result = await resp.json();
       } catch (jsonError) {
-        // JSON解析失败，可能是API返回了HTML错误页面
-        throw new Error("API返回格式错误，请检查服务器配置");
+        // JSON解析失败，获取原始响应内容以便调试
+        const text = await resp.text();
+        throw new Error(`API返回格式错误，原始响应前100字符：${text.substring(0, 100)}...`);
       }
       
       if (resp.ok && result.ok) {
@@ -349,10 +355,10 @@ async function deleteRecord(id) {
     setMsg("删除中...");
     
     try {
-      if (isLocalPreview) {
-        // 本地预览只显示成功消息
+      if (useMockData) {
+        // 使用模拟数据，避免本地预览时API请求失败
         await refreshData();
-        setMsg("记录已删除（本地模拟）", "ok");
+        setMsg("记录已删除（模拟数据）", "ok");
       } else {
         // 生产环境使用真实API
         const resp = await fetch(API_BASE + "/deleteData", {
@@ -365,8 +371,9 @@ async function deleteRecord(id) {
         try {
           result = await resp.json();
         } catch (jsonError) {
-          // JSON解析失败，可能是API返回了HTML错误页面
-          throw new Error("API返回格式错误，请检查服务器配置");
+          // JSON解析失败，获取原始响应内容以便调试
+          const text = await resp.text();
+          throw new Error(`API返回格式错误，原始响应前100字符：${text.substring(0, 100)}...`);
         }
         
         if (resp.ok && result.ok) {
@@ -390,8 +397,8 @@ async function exportData() {
   try {
     let data;
     
-    if (isLocalPreview) {
-      // 本地预览使用模拟数据
+    if (useMockData) {
+      // 使用模拟数据，避免本地预览时API请求失败
       data = mockData;
     } else {
       // 生产环境使用真实API
@@ -404,8 +411,9 @@ async function exportData() {
       try {
         result = await resp.json();
       } catch (jsonError) {
-        // JSON解析失败，可能是API返回了HTML错误页面
-        throw new Error("API返回格式错误，请检查服务器配置");
+        // JSON解析失败，获取原始响应内容以便调试
+        const text = await resp.text();
+        throw new Error(`API返回格式错误，原始响应前100字符：${text.substring(0, 100)}...`);
       }
       
       if (!resp.ok || !result.ok) {
