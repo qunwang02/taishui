@@ -4,14 +4,34 @@
       "maxDuration": 10
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "src": "^/api/(.*)",
+      "dest": "/api/$1.js",
+      "methods": ["GET", "POST", "OPTIONS"]
     },
     {
-      "source": "/(.*)",
-      "destination": "/$1"
+      "src": "^/$",
+      "dest": "/index.html",
+      "headers": {
+        "Content-Type": "text/html"
+      }
+    },
+    {
+      "src": "^/admin$",
+      "dest": "/admin.html",
+      "headers": {
+        "Content-Type": "text/html"
+      }
+    },
+    {
+      "src": "^/(.*\\.html)$",
+      "dest": "/$1"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/index.html",
+      "status": 200
     }
   ]
 }
