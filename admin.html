@@ -248,7 +248,27 @@
 
 <script>
 const API_BASE = "/api"; // Vercel 默认：/api/xxx
-const STORAGE_KEY = "taishui_records_2026"; // 本地存储键名
+const isLocalPreview = window.location.origin.includes('localhost:4173');
+
+// 模拟数据
+const mockData = [
+  {
+    id: "mock-1",
+    name: "张三",
+    zodiac: "肖马：值太岁、刑太岁",
+    amountNTD: 1200,
+    amountCNY: 286,
+    contact: "张三"
+  },
+  {
+    id: "mock-2",
+    name: "李四",
+    zodiac: "肖鼠：冲太岁",
+    amountNTD: 2400,
+    amountCNY: 571,
+    contact: "李四"
+  }
+];
 
 // DOM元素
 const msgElement = document.getElementById("msg");
@@ -266,17 +286,24 @@ async function refreshData() {
   setMsg("数据刷新中...");
   
   try {
-    const resp = await fetch(API_BASE + "/getData", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    
-    const result = await resp.json();
-    if (resp.ok && result.ok) {
-      renderDataTable(result.data);
-      setMsg("数据已刷新", "ok");
+    if (isLocalPreview) {
+      // 本地预览使用模拟数据
+      renderDataTable(mockData);
+      setMsg("数据已刷新（本地模拟）", "ok");
     } else {
-      throw new Error(result.error || resp.statusText);
+      // 生产环境使用真实API
+      const resp = await fetch(API_BASE + "/getData", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      const result = await resp.json();
+      if (resp.ok && result.ok) {
+        renderDataTable(result.data);
+        setMsg("数据已刷新", "ok");
+      } else {
+        throw new Error(result.error || resp.statusText);
+      }
     }
   } catch (e) {
     setMsg("数据刷新失败：" + String(e), "err");
@@ -315,18 +342,25 @@ async function deleteRecord(id) {
     setMsg("删除中...");
     
     try {
-      const resp = await fetch(API_BASE + "/deleteData", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      });
-      
-      const result = await resp.json();
-      if (resp.ok && result.ok) {
+      if (isLocalPreview) {
+        // 本地预览只显示成功消息
         await refreshData();
-        setMsg("记录已删除", "ok");
+        setMsg("记录已删除（本地模拟）", "ok");
       } else {
-        throw new Error(result.error || resp.statusText);
+        // 生产环境使用真实API
+        const resp = await fetch(API_BASE + "/deleteData", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id })
+        });
+        
+        const result = await resp.json();
+        if (resp.ok && result.ok) {
+          await refreshData();
+          setMsg("记录已删除", "ok");
+        } else {
+          throw new Error(result.error || resp.statusText);
+        }
       }
     } catch (e) {
       setMsg("删除失败：" + String(e), "err");
@@ -340,17 +374,26 @@ async function exportData() {
   setMsg("数据导出中...");
   
   try {
-    const resp = await fetch(API_BASE + "/getData", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
+    let data;
     
-    const result = await resp.json();
-    if (!resp.ok || !result.ok) {
-      throw new Error(result.error || resp.statusText);
+    if (isLocalPreview) {
+      // 本地预览使用模拟数据
+      data = mockData;
+    } else {
+      // 生产环境使用真实API
+      const resp = await fetch(API_BASE + "/getData", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      const result = await resp.json();
+      if (!resp.ok || !result.ok) {
+        throw new Error(result.error || resp.statusText);
+      }
+      
+      data = result.data;
     }
     
-    const data = result.data;
     if (data.length === 0) {
       setMsg("暂无数据可导出", "err");
       return;
@@ -387,7 +430,7 @@ async function exportData() {
     document.body.removeChild(link);
     
     URL.revokeObjectURL(url);
-    setMsg("数据导出成功", "ok");
+    setMsg("数据导出成功" + (isLocalPreview ? "（本地模拟）" : ""), "ok");
   } catch (e) {
     setMsg("数据导出失败：" + String(e), "err");
     console.error("数据导出失败：", e);
