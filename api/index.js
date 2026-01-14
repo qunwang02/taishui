@@ -4,15 +4,16 @@ import getData from './getData.js';
 import deleteData from './deleteData.js';
 
 export default async function handler(req, res) {
-  const path = req.url.split('/').pop().split('?')[0];
+  // 提取API路径，去掉/api/前缀
+  const apiPath = req.url.replace('/api/', '').split('?')[0];
   
-  if (path === 'health') {
+  if (apiPath === 'health') {
     return health(req, res);
-  } else if (path === 'submit') {
+  } else if (apiPath === 'submit') {
     return submit(req, res);
-  } else if (path === 'getData') {
+  } else if (apiPath === 'getData') {
     return getData(req, res);
-  } else if (path === 'deleteData') {
+  } else if (apiPath === 'deleteData') {
     return deleteData(req, res);
   } else {
     res.status(404).json({ error: 'Not Found' });
