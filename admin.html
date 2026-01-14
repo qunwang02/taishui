@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>大自在山新春祈福法会-太岁灯2026管理页面</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, "PingFang SC","Microsoft YaHei", Arial;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    padding: 15px;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+  
+  .msg {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .ok {
+    color: #0a7d33;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+  }
+  
+  .err {
+    color: #b80000;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+  }
+  
+  h2 {
+    color: #34495e;
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+  
+  /* 按钮样式 */
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+  }
+  
+  .btn-primary {
+    background-color: #3498db;
+    color: white;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #7f8c8d;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c0392b;
+  }
+  
+  /* 表格样式 */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    background-color: white;
+    overflow: auto;
+    display: block;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #555;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* 无数据提示 */
+  .no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 16px;
+  }
+  
+  /* 按钮组 */
+  .btn-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  /* 返回链接 */
+  .back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #3498db;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    body {
+      padding: 10px;
+    }
+    
+    .container {
+      padding: 15px;
+    }
+    
+    h1 {
+      font-size: 20px;
+    }
+    
+    h2 {
+      font-size: 18px;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+    
+    table {
+      font-size: 12px;
+    }
+    
+    th, td {
+      padding: 8px;
+      font-size: 12px;
+    }
+  }
+  
+  /* 表格容器 */
+  .table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>大自在山新春祈福法会-太岁灯2026管理页面</h1>
+    
+    <!-- 消息提示 -->
+    <div id="msg" class="msg"></div>
+    
+    <!-- 按钮组 -->
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="exportData()">导出数据</button>
+      <button class="btn btn-secondary" onclick="refreshData()">刷新数据</button>
+    </div>
+    
+    <!-- 表格容器 -->
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>生肖</th>
+            <th>护持金额台币</th>
+            <th>人民币</th>
+            <th>联系人</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody"></tbody>
+      </table>
+    </div>
+    
+    <!-- 无数据提示 -->
+    <div id="noData" class="no-data" style="display: none;">
+      暂无登记数据
+    </div>
+    
+    <!-- 返回链接 -->
+    <a href="index.html" class="back-link">返回登记页面</a>
+  </div>
+
+<script>
+const API_BASE = "/api"; // Vercel 默认：/api/xxx
+const STORAGE_KEY = "taishui_records_2026"; // 本地存储键名
+
+// DOM元素
+const msgElement = document.getElementById("msg");
+const dataTableBody = document.getElementById("dataTableBody");
+const noDataElement = document.getElementById("noData");
+
+// 设置消息
+function setMsg(text, type = "") {
+  msgElement.className = "msg " + (type || "");
+  msgElement.textContent = text;
+}
+
+// 读取本地存储数据
+function readLocalData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+// 写入本地存储数据
+function writeLocalData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// 刷新数据
+function refreshData() {
+  const data = readLocalData();
+  renderDataTable(data);
+  setMsg("数据已刷新", "ok");
+}
+
+// 渲染数据表格
+function renderDataTable(data) {
+  dataTableBody.innerHTML = "";
+  
+  if (data.length === 0) {
+    noDataElement.style.display = "block";
+    return;
+  }
+  
+  noDataElement.style.display = "none";
+  
+  data.forEach((row, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row.name || ""}</td>
+      <td>${row.zodiac || ""}</td>
+      <td>${row.amountNTD || 0}</td>
+      <td>${row.amountCNY || 0}</td>
+      <td>${row.contact || ""}</td>
+      <td><button class="btn btn-danger" onclick="deleteRecord(${index})">删除</button></td>
+    `;
+    dataTableBody.appendChild(tr);
+  });
+}
+
+// 删除记录
+function deleteRecord(index) {
+  if (confirm("确定要删除这条记录吗？")) {
+    const localData = readLocalData();
+    localData.splice(index, 1);
+    writeLocalData(localData);
+    renderDataTable(localData);
+    setMsg("记录已删除", "ok");
+  }
+}
+
+// 导出数据
+function exportData() {
+  const data = readLocalData();
+  if (data.length === 0) {
+    setMsg("暂无数据可导出", "err");
+    return;
+  }
+  
+  // CSV表头
+  const headers = ["姓名", "生肖", "护持金额台币", "人民币", "联系人"];
+  
+  // CSV行数据
+  const csvRows = [headers.join(",")];
+  
+  for (const row of data) {
+    const csvRow = [
+      row.name || "",
+      row.zodiac || "",
+      row.amountNTD || 0,
+      row.amountCNY || 0,
+      row.contact || ""
+    ];
+    csvRows.push(csvRow.join(","));
+  }
+  
+  // 生成CSV文件
+  const csvContent = csvRows.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  
+  // 创建下载链接
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `太岁灯登记数据_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+  setMsg("数据导出成功", "ok");
+}
+
+// 初始化
+function init() {
+  // 刷新数据
+  refreshData();
+}
+
+// 页面加载完成后初始化
+window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
