@@ -1,8 +1,16 @@
 {
-  "name": "notion-gongke-serverless",
+  "name": "notion-taishui-serverless",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@notionhq/client": "^2.2.14"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }
