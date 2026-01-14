@@ -11,10 +11,11 @@ function cors(res) {
 
 const requiredSchema = {
   "姓名": "title",
-  "生肖": "rich_text",
-  "护持金额台币": "number",
-  "人民币": "number",
-  "联系人": "rich_text",
+  "生肖": "rich_text",  // 新增
+  "护持金额台币": "number",  // 新增
+  "人民币": "number",  // 新增
+  "联系人": "rich_text"  // 新增
+  // 删除所有修行相关的字段
 };
 
 function getTypeString(propObj) {
@@ -79,6 +80,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: msg });
   }
 }
+
 
 
 
