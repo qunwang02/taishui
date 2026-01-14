@@ -14,7 +14,7 @@ const requiredSchema = {
   "生肖": "rich_text",
   "护持金额台币": "number",
   "人民币": "number",
-  "联系人": "rich_text"
+  "联系人": "rich_text",
 };
 
 function getTypeString(propObj) {
@@ -79,5 +79,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: msg });
   }
 }
+
 
 
