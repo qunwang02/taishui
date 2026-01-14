@@ -261,25 +261,27 @@ function setMsg(text, type = "") {
   msgElement.textContent = text;
 }
 
-// 读取本地存储数据
-function readLocalData() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch (e) {
-    return [];
-  }
-}
-
-// 写入本地存储数据
-function writeLocalData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
 // 刷新数据
-function refreshData() {
-  const data = readLocalData();
-  renderDataTable(data);
-  setMsg("数据已刷新", "ok");
+async function refreshData() {
+  setMsg("数据刷新中...");
+  
+  try {
+    const resp = await fetch(API_BASE + "/getData", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    const result = await resp.json();
+    if (resp.ok && result.ok) {
+      renderDataTable(result.data);
+      setMsg("数据已刷新", "ok");
+    } else {
+      throw new Error(result.error || resp.statusText);
+    }
+  } catch (e) {
+    setMsg("数据刷新失败：" + String(e), "err");
+    console.error("数据刷新失败：", e);
+  }
 }
 
 // 渲染数据表格
@@ -293,7 +295,7 @@ function renderDataTable(data) {
   
   noDataElement.style.display = "none";
   
-  data.forEach((row, index) => {
+  data.forEach((row) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row.name || ""}</td>
@@ -301,69 +303,101 @@ function renderDataTable(data) {
       <td>${row.amountNTD || 0}</td>
       <td>${row.amountCNY || 0}</td>
       <td>${row.contact || ""}</td>
-      <td><button class="btn btn-danger" onclick="deleteRecord(${index})">删除</button></td>
+      <td><button class="btn btn-danger" onclick="deleteRecord('${row.id}')">删除</button></td>
     `;
     dataTableBody.appendChild(tr);
   });
 }
 
 // 删除记录
-function deleteRecord(index) {
+async function deleteRecord(id) {
   if (confirm("确定要删除这条记录吗？")) {
-    const localData = readLocalData();
-    localData.splice(index, 1);
-    writeLocalData(localData);
-    renderDataTable(localData);
-    setMsg("记录已删除", "ok");
+    setMsg("删除中...");
+    
+    try {
+      const resp = await fetch(API_BASE + "/deleteData", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      
+      const result = await resp.json();
+      if (resp.ok && result.ok) {
+        await refreshData();
+        setMsg("记录已删除", "ok");
+      } else {
+        throw new Error(result.error || resp.statusText);
+      }
+    } catch (e) {
+      setMsg("删除失败：" + String(e), "err");
+      console.error("删除失败：", e);
+    }
   }
 }
 
 // 导出数据
-function exportData() {
-  const data = readLocalData();
-  if (data.length === 0) {
-    setMsg("暂无数据可导出", "err");
-    return;
+async function exportData() {
+  setMsg("数据导出中...");
+  
+  try {
+    const resp = await fetch(API_BASE + "/getData", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    const result = await resp.json();
+    if (!resp.ok || !result.ok) {
+      throw new Error(result.error || resp.statusText);
+    }
+    
+    const data = result.data;
+    if (data.length === 0) {
+      setMsg("暂无数据可导出", "err");
+      return;
+    }
+    
+    // CSV表头
+    const headers = ["姓名", "生肖", "护持金额台币", "人民币", "联系人"];
+    
+    // CSV行数据
+    const csvRows = [headers.join(",")];
+    
+    for (const row of data) {
+      const csvRow = [
+        row.name || "",
+        row.zodiac || "",
+        row.amountNTD || 0,
+        row.amountCNY || 0,
+        row.contact || ""
+      ];
+      csvRows.push(csvRow.join(","));
+    }
+    
+    // 生成CSV文件
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
+    // 创建下载链接
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `太岁灯登记数据_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+    setMsg("数据导出成功", "ok");
+  } catch (e) {
+    setMsg("数据导出失败：" + String(e), "err");
+    console.error("数据导出失败：", e);
   }
-  
-  // CSV表头
-  const headers = ["姓名", "生肖", "护持金额台币", "人民币", "联系人"];
-  
-  // CSV行数据
-  const csvRows = [headers.join(",")];
-  
-  for (const row of data) {
-    const csvRow = [
-      row.name || "",
-      row.zodiac || "",
-      row.amountNTD || 0,
-      row.amountCNY || 0,
-      row.contact || ""
-    ];
-    csvRows.push(csvRow.join(","));
-  }
-  
-  // 生成CSV文件
-  const csvContent = csvRows.join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  
-  // 创建下载链接
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `太岁灯登记数据_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  URL.revokeObjectURL(url);
-  setMsg("数据导出成功", "ok");
 }
 
 // 初始化
-function init() {
+async function init() {
   // 刷新数据
-  refreshData();
+  await refreshData();
 }
 
 // 页面加载完成后初始化
