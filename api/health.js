@@ -11,18 +11,10 @@ function cors(res) {
 
 const requiredSchema = {
   "姓名": "title",
-  "提交时间": "date",
-  "九字禅（声）": "number",
-  "拜忏文（遍）": "number",
-  "静禅（分钟）": "number",
-  "动禅（分钟）": "number",
-  "金刚经": "number",
-  "阿弥陀经": "number",
-  "普门品": "number",
-  "普贤行愿品": "number",
-  "地藏菩萨本愿经": "number",
-  "心经": "number",
-  "备注": "rich_text"
+  "生肖": "rich_text",
+  "护持金额台币": "number",
+  "人民币": "number",
+  "联系人": "rich_text"
 };
 
 function getTypeString(propObj) {
@@ -87,4 +79,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: msg });
   }
 }
+
 
