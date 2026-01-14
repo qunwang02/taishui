@@ -297,12 +297,19 @@ async function refreshData() {
         headers: { "Content-Type": "application/json" }
       });
       
-      const result = await resp.json();
+      let result;
+      try {
+        result = await resp.json();
+      } catch (jsonError) {
+        // JSON解析失败，可能是API返回了HTML错误页面
+        throw new Error("API返回格式错误，请检查服务器配置");
+      }
+      
       if (resp.ok && result.ok) {
         renderDataTable(result.data);
         setMsg("数据已刷新", "ok");
       } else {
-        throw new Error(result.error || resp.statusText);
+        throw new Error(result.error || "获取数据失败");
       }
     }
   } catch (e) {
@@ -354,12 +361,19 @@ async function deleteRecord(id) {
           body: JSON.stringify({ id })
         });
         
-        const result = await resp.json();
+        let result;
+        try {
+          result = await resp.json();
+        } catch (jsonError) {
+          // JSON解析失败，可能是API返回了HTML错误页面
+          throw new Error("API返回格式错误，请检查服务器配置");
+        }
+        
         if (resp.ok && result.ok) {
           await refreshData();
           setMsg("记录已删除", "ok");
         } else {
-          throw new Error(result.error || resp.statusText);
+          throw new Error(result.error || "删除数据失败");
         }
       }
     } catch (e) {
@@ -386,9 +400,16 @@ async function exportData() {
         headers: { "Content-Type": "application/json" }
       });
       
-      const result = await resp.json();
+      let result;
+      try {
+        result = await resp.json();
+      } catch (jsonError) {
+        // JSON解析失败，可能是API返回了HTML错误页面
+        throw new Error("API返回格式错误，请检查服务器配置");
+      }
+      
       if (!resp.ok || !result.ok) {
-        throw new Error(result.error || resp.statusText);
+        throw new Error(result.error || "获取数据失败");
       }
       
       data = result.data;
