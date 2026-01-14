@@ -10,13 +10,24 @@ function cors(res) {
 }
 
 export default async function handler(req, res) {
+  // 确保始终返回JSON
+  res.setHeader('Content-Type', 'application/json');
+  
   cors(res);
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "GET") return res.status(405).json({ error: "Method Not Allowed" });
+  if (req.method === "OPTIONS") {
+    return res.status(200).json({ ok: true });
+  }
+  if (req.method !== "GET") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
 
   try {
+    if (!process.env.NOTION_API_KEY) {
+      return res.status(500).json({ ok: false, error: "环境变量 NOTION_API_KEY 未设置" });
+    }
+    
     if (!DATABASE_ID) {
-      return res.status(400).json({ ok: false, error: "缺少环境变量 NOTION_DATABASE_ID" });
+      return res.status(500).json({ ok: false, error: "环境变量 NOTION_DATABASE_ID 未设置" });
     }
 
     const response = await notion.databases.query({
@@ -43,7 +54,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, data: results });
   } catch (e) {
-    const msg = e?.body?.message || e.message || String(e);
-    return res.status(500).json({ ok: false, error: msg });
+    console.error("getData error:", e);
+    // 确保返回JSON格式错误
+    return res.status(500).json({
+      ok: false,
+      error: "获取数据失败",
+      details: String(e).substring(0, 100) // 只返回前100个字符，避免HTML内容
+    });
   }
 }
