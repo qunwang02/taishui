@@ -253,7 +253,7 @@ const isLocalPreview = window.location.origin.includes('localhost:');
 
 // 强制使用模拟数据，避免本地预览时API请求失败
 // 部署到Vercel后会自动使用真实API
-const useMockData = isLocalPreview || true;
+const useMockData = isLocalPreview ||false ;
 
 // 模拟数据
 const mockData = [
