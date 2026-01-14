@@ -253,7 +253,7 @@ const isLocalPreview = window.location.origin.includes('localhost:');
 
 // 强制使用模拟数据，避免本地预览时API请求失败
 // 部署到Vercel后会自动使用真实API
-const useMockData = isLocalPreview ||false ;
+const useMockData = isLocalPreview || true;
 
 // 模拟数据
 const mockData = [
@@ -304,17 +304,10 @@ async function refreshData() {
       
       let result;
       try {
-        // 克隆响应对象，以便在解析失败时读取原始内容
-        const clonedResp = resp.clone();
         result = await resp.json();
       } catch (jsonError) {
-        // JSON解析失败，获取原始响应内容以便调试
-        try {
-          const text = await resp.text();
-          throw new Error(`API返回格式错误，原始响应前100字符：${text.substring(0, 100)}...`);
-        } catch (textError) {
-          throw new Error(`API返回格式错误，无法读取响应内容：${String(textError)}`);
-        }
+        // JSON解析失败，直接抛出错误，避免再次读取响应流
+        throw new Error(`API返回格式错误：${String(jsonError)}`);
       }
       
       if (resp.ok && result.ok) {
