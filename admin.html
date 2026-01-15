@@ -20,7 +20,7 @@
   }
   
   .container {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
     background-color: white;
     padding: 20px;
@@ -37,7 +37,7 @@
   
   .msg {
     margin: 15px 0;
-    padding: 10px;
+    padding: 12px;
     border-radius: 4px;
     text-align: center;
     font-size: 14px;
@@ -55,6 +55,12 @@
     border: 1px solid #f5c6cb;
   }
   
+  .info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+  }
+  
   h2 {
     color: #34495e;
     margin-bottom: 15px;
@@ -70,13 +76,18 @@
     cursor: pointer;
     transition: all 0.3s;
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn i {
+    font-size: 14px;
   }
   
   .btn-primary {
     background-color: #3498db;
     color: white;
-    margin-right: 10px;
-    margin-bottom: 10px;
   }
   
   .btn-primary:hover {
@@ -86,12 +97,19 @@
   .btn-secondary {
     background-color: #95a5a6;
     color: white;
-    margin-right: 10px;
-    margin-bottom: 10px;
   }
   
   .btn-secondary:hover {
     background-color: #7f8c8d;
+  }
+  
+  .btn-success {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .btn-success:hover {
+    background-color: #27ae60;
   }
   
   .btn-danger {
@@ -103,6 +121,15 @@
   
   .btn-danger:hover {
     background-color: #c0392b;
+  }
+  
+  .btn-warning {
+    background-color: #f39c12;
+    color: white;
+  }
+  
+  .btn-warning:hover {
+    background-color: #d68910;
   }
   
   /* 表格样式 */
@@ -141,9 +168,12 @@
   /* 无数据提示 */
   .no-data {
     text-align: center;
-    padding: 20px;
+    padding: 30px;
     color: #666;
     font-size: 16px;
+    background-color: #fafafa;
+    border-radius: 4px;
+    margin: 20px 0;
   }
   
   /* 按钮组 */
@@ -152,6 +182,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
   }
   
   /* 返回链接 */
@@ -165,6 +196,54 @@
   
   .back-link:hover {
     text-decoration: underline;
+  }
+  
+  /* 状态指示器 */
+  .status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .status-online {
+    background-color: #2ecc71;
+  }
+  
+  .status-offline {
+    background-color: #e74c3c;
+  }
+  
+  .status-warning {
+    background-color: #f39c12;
+  }
+  
+  /* 统计卡片 */
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: bold;
   }
   
   /* 响应式设计 */
@@ -192,11 +271,21 @@
     
     table {
       font-size: 12px;
+      display: block;
+      overflow-x: auto;
     }
     
     th, td {
       padding: 8px;
       font-size: 12px;
+    }
+    
+    .btn-group {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
     }
   }
   
@@ -204,6 +293,24 @@
   .table-container {
     overflow-x: auto;
     margin-top: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+  }
+  
+  /* 加载动画 */
+  .loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 </style>
 </head>
@@ -211,25 +318,69 @@
   <div class="container">
     <h1>大自在山新春祈福法会-太岁灯2026管理页面</h1>
     
+    <!-- 状态栏 -->
+    <div id="statusBar" class="msg info">
+      <span id="statusIcon" class="status-indicator status-offline"></span>
+      <span id="statusText">正在检查数据库连接...</span>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div id="statsContainer" class="stats-container" style="display: none;">
+      <div class="stat-card">
+        <h3>总记录数</h3>
+        <div class="value" id="totalCount">0</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <h3>护持总金额 (台币)</h3>
+        <div class="value" id="totalAmountNTD">0</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <h3>护持总金额 (人民币)</h3>
+        <div class="value" id="totalAmountCNY">0</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+        <h3>最后更新时间</h3>
+        <div class="value" id="lastUpdate">-</div>
+      </div>
+    </div>
+    
     <!-- 消息提示 -->
     <div id="msg" class="msg"></div>
     
     <!-- 按钮组 -->
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="exportData()">导出数据</button>
-      <button class="btn btn-secondary" onclick="refreshData()">刷新数据</button>
+      <button class="btn btn-primary" onclick="loadData()">
+        <span>🔄</span> 从数据库加载
+      </button>
+      <button class="btn btn-success" onclick="exportData()">
+        <span>📊</span> 导出数据
+      </button>
+      <button class="btn btn-warning" onclick="syncToDatabase()">
+        <span>📤</span> 同步到数据库
+      </button>
+      <button class="btn btn-secondary" onclick="refreshLocalData()">
+        <span>💾</span> 刷新本地数据
+      </button>
+      <button class="btn btn-danger" onclick="clearLocalData()">
+        <span>🗑️</span> 清空本地数据
+      </button>
     </div>
+    
+    <!-- 加载动画 -->
+    <div id="loader" class="loader" style="display: none;"></div>
     
     <!-- 表格容器 -->
     <div class="table-container">
       <table id="dataTable">
         <thead>
           <tr>
+            <th>序号</th>
             <th>姓名</th>
             <th>生肖</th>
             <th>护持金额台币</th>
             <th>人民币</th>
             <th>联系人</th>
+            <th>提交时间</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -239,87 +390,353 @@
     
     <!-- 无数据提示 -->
     <div id="noData" class="no-data" style="display: none;">
-      暂无登记数据
+      <div>📭</div>
+      <div style="margin-top: 10px;">暂无登记数据</div>
+      <div style="margin-top: 10px; font-size: 14px; color: #888;">
+        请从数据库加载或使用本地存储数据
+      </div>
     </div>
     
     <!-- 返回链接 -->
-    <a href="index.html" class="back-link">返回登记页面</a>
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="index.html" class="back-link">⬅️ 返回登记页面</a>
+      <span style="margin: 0 10px; color: #ddd">|</span>
+      <a href="javascript:void(0)" onclick="testConnection()" class="back-link">🔧 测试连接</a>
+      <span style="margin: 0 10px; color: #ddd">|</span>
+      <a href="javascript:void(0)" onclick="showDebugInfo()" class="back-link">🐛 调试信息</a>
+    </div>
   </div>
 
 <script>
-const API_BASE = "/api"; // Vercel 默认：/api/xxx
-// 检测本地预览环境，包括Vite的开发服务器和预览服务器
-const isLocalPreview = window.location.origin.includes('localhost:');
-
-// 强制使用模拟数据，避免本地预览时API请求失败
-// 部署到Vercel后会自动使用真实API
-const useMockData = isLocalPreview || false;
-
-// 模拟数据
-const mockData = [
-  {
-    id: "mock-1",
-    name: "张三",
-    zodiac: "肖马：值太岁、刑太岁",
-    amountNTD: 1200,
-    amountCNY: 286,
-    contact: "张三"
-  },
-  {
-    id: "mock-2",
-    name: "李四",
-    zodiac: "肖鼠：冲太岁",
-    amountNTD: 2400,
-    amountCNY: 571,
-    contact: "李四"
-  }
-];
+// 配置
+const CONFIG = {
+  STORAGE_KEY: "taishui_records_2026",
+  API_BASE: window.location.origin + "/api",
+  EXCHANGE_RATE: 4.2
+};
 
 // DOM元素
 const msgElement = document.getElementById("msg");
+const statusBar = document.getElementById("statusBar");
+const statusIcon = document.getElementById("statusIcon");
+const statusText = document.getElementById("statusText");
 const dataTableBody = document.getElementById("dataTableBody");
 const noDataElement = document.getElementById("noData");
+const loader = document.getElementById("loader");
+const statsContainer = document.getElementById("statsContainer");
+
+// 生肖映射
+const ZODIAC_MAP = {
+  "肖马": "肖马：值太岁、刑太岁",
+  "肖鼠": "肖鼠：冲太岁",
+  "肖兔": "肖兔：破太岁",
+  "肖牛": "肖牛：害太岁",
+  "肖鸡": "肖鸡：害太岁、刑太岁"
+};
 
 // 设置消息
 function setMsg(text, type = "") {
-  msgElement.className = "msg " + (type || "");
+  msgElement.className = "msg " + type;
   msgElement.textContent = text;
+  msgElement.style.display = text ? "block" : "none";
+  
+  // 自动清除消息
+  if (text && type === "ok") {
+    setTimeout(() => {
+      msgElement.style.display = "none";
+    }, 3000);
+  }
 }
 
-// 刷新数据
-async function refreshData() {
-  setMsg("数据刷新中...");
+// 更新状态栏
+function updateStatus(iconClass, text) {
+  statusIcon.className = "status-indicator " + iconClass;
+  statusText.textContent = text;
+}
+
+// 显示/隐藏加载动画
+function showLoader(show) {
+  loader.style.display = show ? "block" : "none";
+}
+
+// 读取本地存储数据
+function readLocalData() {
+  try {
+    const data = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || "[]");
+    console.log("读取本地数据:", data.length, "条记录");
+    return data;
+  } catch (e) {
+    console.error("读取本地数据失败:", e);
+    return [];
+  }
+}
+
+// 写入本地存储数据
+function writeLocalData(data) {
+  try {
+    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
+    console.log("保存本地数据:", data.length, "条记录");
+    return true;
+  } catch (e) {
+    console.error("保存本地数据失败:", e);
+    return false;
+  }
+}
+
+// 清空本地数据
+function clearLocalData() {
+  if (confirm("⚠️ 确定要清空所有本地数据吗？此操作不可恢复！")) {
+    localStorage.removeItem(CONFIG.STORAGE_KEY);
+    renderDataTable([]);
+    updateStats([]);
+    setMsg("本地数据已清空", "ok");
+  }
+}
+
+// 从数据库加载数据
+async function loadData() {
+  showLoader(true);
+  updateStatus("status-warning", "正在连接数据库...");
   
   try {
-    if (useMockData) {
-      // 使用模拟数据，避免本地预览时API请求失败
-      renderDataTable(mockData);
-      setMsg("数据已刷新（模拟数据）", "ok");
-    } else {
-      // 生产环境使用真实API
-      const resp = await fetch(API_BASE + "/getData", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-      });
+    // 检查数据库连接
+    const healthRes = await fetch(CONFIG.API_BASE + "/health");
+    
+    if (!healthRes.ok) {
+      throw new Error("数据库连接失败: " + healthRes.status);
+    }
+    
+    const healthData = await healthRes.json();
+    
+    if (healthData.ok) {
+      updateStatus("status-online", "数据库连接正常");
       
-      let result;
-      try {
-        result = await resp.json();
-      } catch (jsonError) {
-        // JSON解析失败，直接抛出错误，避免再次读取响应流
-        throw new Error(`API返回格式错误：${String(jsonError)}`);
-      }
+      // 如果有数据API，从这里获取数据
+      // 目前先使用本地数据
+      const localData = readLocalData();
+      renderDataTable(localData);
+      updateStats(localData);
       
-      if (resp.ok && result.ok) {
-        renderDataTable(result.data);
-        setMsg("数据已刷新", "ok");
+      if (localData.length > 0) {
+        setMsg(`从本地加载 ${localData.length} 条记录`, "ok");
       } else {
-        throw new Error(result.error || "获取数据失败");
+        setMsg("数据库连接正常，但本地暂无数据", "info");
+      }
+    } else {
+      updateStatus("status-offline", "数据库配置错误");
+      setMsg("数据库配置错误: " + (healthData.error || "未知错误"), "err");
+      
+      // 使用本地数据作为后备
+      const localData = readLocalData();
+      if (localData.length > 0) {
+        renderDataTable(localData);
+        updateStats(localData);
+        setMsg(`使用本地数据 (${localData.length} 条记录)`, "info");
       }
     }
-  } catch (e) {
-    setMsg("数据刷新失败：" + String(e), "err");
-    console.error("数据刷新失败：", e);
+  } catch (error) {
+    console.error("加载数据失败:", error);
+    updateStatus("status-offline", "连接失败: " + error.message);
+    
+    // 使用本地数据
+    const localData = readLocalData();
+    renderDataTable(localData);
+    updateStats(localData);
+    
+    if (localData.length > 0) {
+      setMsg(`网络连接失败，使用本地数据 (${localData.length} 条记录)`, "err");
+    } else {
+      setMsg("网络连接失败，且本地无数据", "err");
+    }
+  } finally {
+    showLoader(false);
+  }
+}
+
+// 同步数据到数据库
+async function syncToDatabase() {
+  const localData = readLocalData();
+  
+  if (localData.length === 0) {
+    setMsg("暂无数据需要同步", "info");
+    return;
+  }
+  
+  if (!confirm(`确定要将 ${localData.length} 条记录同步到数据库吗？`)) {
+    return;
+  }
+  
+  showLoader(true);
+  updateStatus("status-warning", "正在同步数据...");
+  
+  try {
+    let successCount = 0;
+    let errorCount = 0;
+    const errors = [];
+    
+    for (let i = 0; i < localData.length; i++) {
+      const record = localData[i];
+      
+      try {
+        const response = await fetch(CONFIG.API_BASE + "/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title: record.name,
+            zodiac: record.zodiac,
+            "护持金额台币": record.amountNTD,
+            人民币: record.amountCNY,
+            联系人: record.contact
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.ok) {
+          successCount++;
+        } else {
+          errorCount++;
+          errors.push(`记录 ${i + 1} (${record.name}): ${result.error || "未知错误"}`);
+        }
+        
+        // 延迟避免请求过快
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+      } catch (error) {
+        errorCount++;
+        errors.push(`记录 ${i + 1} (${record.name}): ${error.message}`);
+      }
+    }
+    
+    if (errorCount === 0) {
+      setMsg(`✅ 成功同步 ${successCount} 条记录到数据库`, "ok");
+      updateStatus("status-online", "同步完成");
+    } else {
+      setMsg(`⚠️ 同步完成: 成功 ${successCount} 条，失败 ${errorCount} 条`, "err");
+      
+      if (errors.length > 0) {
+        console.error("同步错误详情:", errors);
+      }
+    }
+    
+  } catch (error) {
+    console.error("同步失败:", error);
+    setMsg("同步失败: " + error.message, "err");
+    updateStatus("status-offline", "同步失败");
+  } finally {
+    showLoader(false);
+  }
+}
+
+// 导出数据
+function exportData() {
+  const data = readLocalData();
+  
+  if (data.length === 0) {
+    setMsg("暂无数据可导出", "info");
+    return;
+  }
+  
+  try {
+    // 准备CSV数据
+    const headers = ["序号", "姓名", "生肖", "护持金额台币", "人民币", "联系人", "提交时间"];
+    const csvRows = [headers.join(",")];
+    
+    let totalNTD = 0;
+    let totalCNY = 0;
+    
+    data.forEach((row, index) => {
+      totalNTD += row.amountNTD || 0;
+      totalCNY += row.amountCNY || 0;
+      
+      const csvRow = [
+        index + 1,
+        `"${row.name || ""}"`,
+        `"${row.zodiac || ""}"`,
+        row.amountNTD || 0,
+        row.amountCNY || 0,
+        `"${row.contact || ""}"`,
+        `"${row.timestamp ? new Date(row.timestamp).toLocaleString() : new Date().toLocaleString()}"`
+      ];
+      csvRows.push(csvRow.join(","));
+    });
+    
+    // 添加汇总行
+    csvRows.push(""); // 空行
+    csvRows.push("总计,,,,,,");
+    csvRows.push(`合计,${totalNTD},${totalCNY},,,,`);
+    csvRows.push(`平均,${Math.round(totalNTD/data.length)},${Math.round(totalCNY/data.length)},,,,`);
+    
+    // 生成CSV文件
+    const csvContent = "\uFEFF" + csvRows.join("\n"); // BOM for Excel
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
+    // 创建下载链接
+    const link = document.createElement("a");
+    const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    link.href = url;
+    link.download = `太岁灯数据_${timestamp}_${data.length}条.csv`;
+    link.style.display = "none";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+    
+    setMsg(`✅ 成功导出 ${data.length} 条记录`, "ok");
+    
+  } catch (error) {
+    console.error("导出失败:", error);
+    setMsg("导出失败: " + error.message, "err");
+  }
+}
+
+// 刷新本地数据
+function refreshLocalData() {
+  const data = readLocalData();
+  renderDataTable(data);
+  updateStats(data);
+  setMsg(`刷新本地数据，共 ${data.length} 条记录`, "ok");
+}
+
+// 更新统计信息
+function updateStats(data) {
+  if (data.length === 0) {
+    statsContainer.style.display = "none";
+    return;
+  }
+  
+  statsContainer.style.display = "grid";
+  
+  let totalNTD = 0;
+  let totalCNY = 0;
+  
+  data.forEach(item => {
+    totalNTD += item.amountNTD || 0;
+    totalCNY += item.amountCNY || 0;
+  });
+  
+  document.getElementById("totalCount").textContent = data.length;
+  document.getElementById("totalAmountNTD").textContent = totalNTD.toLocaleString();
+  document.getElementById("totalAmountCNY").textContent = totalCNY.toLocaleString();
+  
+  // 获取最新记录的时间
+  const latestRecord = data.reduce((latest, current) => {
+    const currentTime = current.timestamp || 0;
+    const latestTime = latest.timestamp || 0;
+    return currentTime > latestTime ? current : latest;
+  }, { timestamp: 0 });
+  
+  if (latestRecord.timestamp) {
+    const date = new Date(latestRecord.timestamp);
+    document.getElementById("lastUpdate").textContent = 
+      `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+  } else {
+    document.getElementById("lastUpdate").textContent = "刚刚";
   }
 }
 
@@ -327,150 +744,190 @@ async function refreshData() {
 function renderDataTable(data) {
   dataTableBody.innerHTML = "";
   
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     noDataElement.style.display = "block";
     return;
   }
   
   noDataElement.style.display = "none";
   
-  data.forEach((row) => {
+  data.forEach((row, index) => {
     const tr = document.createElement("tr");
+    
+    // 格式化时间
+    let timeDisplay = "-";
+    if (row.timestamp) {
+      const date = new Date(row.timestamp);
+      timeDisplay = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }
+    
     tr.innerHTML = `
-      <td>${row.name || ""}</td>
-      <td>${row.zodiac || ""}</td>
-      <td>${row.amountNTD || 0}</td>
-      <td>${row.amountCNY || 0}</td>
+      <td>${index + 1}</td>
+      <td><strong>${row.name || ""}</strong></td>
+      <td>${ZODIAC_MAP[row.zodiac] || row.zodiac || ""}</td>
+      <td style="text-align: right;">${(row.amountNTD || 0).toLocaleString()}</td>
+      <td style="text-align: right;">${(row.amountCNY || 0).toLocaleString()}</td>
       <td>${row.contact || ""}</td>
-      <td><button class="btn btn-danger" onclick="deleteRecord('${row.id}')">删除</button></td>
+      <td>${timeDisplay}</td>
+      <td>
+        <button class="btn btn-danger" onclick="deleteRecord(${index})" title="删除">
+          删除
+        </button>
+      </td>
     `;
     dataTableBody.appendChild(tr);
   });
 }
 
 // 删除记录
-async function deleteRecord(id) {
-  if (confirm("确定要删除这条记录吗？")) {
-    setMsg("删除中...");
-    
-    try {
-      if (useMockData) {
-        // 使用模拟数据，避免本地预览时API请求失败
-        await refreshData();
-        setMsg("记录已删除（模拟数据）", "ok");
-      } else {
-        // 生产环境使用真实API
-        const resp = await fetch(API_BASE + "/deleteData", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id })
-        });
-        
-        let result;
-        try {
-          result = await resp.json();
-        } catch (jsonError) {
-          // JSON解析失败，直接抛出错误，避免再次读取响应流
-          throw new Error(`API返回格式错误：${String(jsonError)}`);
-        }
-        
-        if (resp.ok && result.ok) {
-          await refreshData();
-          setMsg("记录已删除", "ok");
-        } else {
-          throw new Error(result.error || "删除数据失败");
-        }
-      }
-    } catch (e) {
-      setMsg("删除失败：" + String(e), "err");
-      console.error("删除失败：", e);
-    }
+function deleteRecord(index) {
+  if (!confirm(`确定要删除第 ${index + 1} 条记录吗？`)) {
+    return;
+  }
+  
+  const localData = readLocalData();
+  const deletedItem = localData[index];
+  
+  localData.splice(index, 1);
+  
+  if (writeLocalData(localData)) {
+    renderDataTable(localData);
+    updateStats(localData);
+    setMsg(`已删除记录: ${deletedItem.name || "未知"}`, "ok");
+  } else {
+    setMsg("删除失败", "err");
   }
 }
 
-// 导出数据
-async function exportData() {
-  setMsg("数据导出中...");
+// 测试连接
+async function testConnection() {
+  showLoader(true);
+  updateStatus("status-warning", "正在测试连接...");
   
   try {
-    let data;
+    const urlsToTest = [
+      { name: "健康检查", url: CONFIG.API_BASE + "/health" },
+      { name: "提交API", url: CONFIG.API_BASE + "/submit" }
+    ];
     
-    if (useMockData) {
-      // 使用模拟数据，避免本地预览时API请求失败
-      data = mockData;
-    } else {
-      // 生产环境使用真实API
-      const resp = await fetch(API_BASE + "/getData", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-      });
-      
-      let result;
+    let results = [];
+    
+    for (const test of urlsToTest) {
       try {
-        result = await resp.json();
-      } catch (jsonError) {
-        // JSON解析失败，直接抛出错误，避免再次读取响应流
-        throw new Error(`API返回格式错误：${String(jsonError)}`);
+        const startTime = Date.now();
+        const response = await fetch(test.url, { method: 'GET' });
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
+        
+        results.push({
+          name: test.name,
+          status: response.status,
+          ok: response.ok,
+          time: responseTime
+        });
+      } catch (error) {
+        results.push({
+          name: test.name,
+          status: "ERROR",
+          ok: false,
+          error: error.message
+        });
       }
-      
-      if (!resp.ok || !result.ok) {
-        throw new Error(result.error || "获取数据失败");
-      }
-      
-      data = result.data;
     }
     
-    if (data.length === 0) {
-      setMsg("暂无数据可导出", "err");
-      return;
+    let message = "连接测试结果:\n";
+    results.forEach(result => {
+      message += `\n${result.name}: ${result.ok ? "✅ 正常" : "❌ 失败"} ${result.time ? `(${result.time}ms)` : ""} ${result.error || ""}`;
+    });
+    
+    alert(message);
+    
+    if (results.every(r => r.ok)) {
+      updateStatus("status-online", "所有连接正常");
+    } else {
+      updateStatus("status-warning", "部分连接失败");
     }
     
-    // CSV表头
-    const headers = ["姓名", "生肖", "护持金额台币", "人民币", "联系人"];
-    
-    // CSV行数据
-    const csvRows = [headers.join(",")];
-    
-    for (const row of data) {
-      const csvRow = [
-        row.name || "",
-        row.zodiac || "",
-        row.amountNTD || 0,
-        row.amountCNY || 0,
-        row.contact || ""
-      ];
-      csvRows.push(csvRow.join(","));
-    }
-    
-    // 生成CSV文件
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    // 创建下载链接
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `太岁灯登记数据_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    URL.revokeObjectURL(url);
-    setMsg("数据导出成功" + (isLocalPreview ? "（本地模拟）" : ""), "ok");
-  } catch (e) {
-    setMsg("数据导出失败：" + String(e), "err");
-    console.error("数据导出失败：", e);
+  } catch (error) {
+    updateStatus("status-offline", "测试失败");
+    alert("测试失败: " + error.message);
+  } finally {
+    showLoader(false);
   }
+}
+
+// 显示调试信息
+function showDebugInfo() {
+  const localData = readLocalData();
+  const info = {
+    本地存储键名: CONFIG.STORAGE_KEY,
+    记录数量: localData.length,
+    API地址: CONFIG.API_BASE,
+    用户代理: navigator.userAgent,
+    当前时间: new Date().toISOString(),
+    本地存储: localStorage.getItem(CONFIG.STORAGE_KEY) ? "可用" : "空"
+  };
+  
+  console.log("调试信息:", info);
+  alert("调试信息已输出到控制台，请按F12查看");
 }
 
 // 初始化
 async function init() {
-  // 刷新数据
-  await refreshData();
+  console.log("管理页面初始化...");
+  console.log("API Base:", CONFIG.API_BASE);
+  console.log("当前域名:", window.location.origin);
+  
+  // 显示欢迎信息
+  setMsg("管理页面已加载", "info");
+  
+  // 加载本地数据
+  const localData = readLocalData();
+  renderDataTable(localData);
+  updateStats(localData);
+  
+  if (localData.length > 0) {
+    setMsg(`已加载 ${localData.length} 条本地记录`, "ok");
+  }
+  
+  // 自动测试数据库连接
+  setTimeout(async () => {
+    try {
+      const response = await fetch(CONFIG.API_BASE + "/health");
+      if (response.ok) {
+        updateStatus("status-online", "数据库连接正常");
+      } else {
+        updateStatus("status-offline", "数据库连接失败");
+      }
+    } catch (error) {
+      updateStatus("status-offline", "无法连接到数据库");
+    }
+  }, 1000);
 }
 
 // 页面加载完成后初始化
 window.addEventListener("DOMContentLoaded", init);
+
+// 添加键盘快捷键
+document.addEventListener("keydown", (e) => {
+  // Ctrl+R 刷新数据
+  if (e.ctrlKey && e.key === "r") {
+    e.preventDefault();
+    refreshLocalData();
+  }
+  
+  // Ctrl+E 导出数据
+  if (e.ctrlKey && e.key === "e") {
+    e.preventDefault();
+    exportData();
+  }
+  
+  // Ctrl+S 同步到数据库
+  if (e.ctrlKey && e.key === "s") {
+    e.preventDefault();
+    syncToDatabase();
+  }
+});
 </script>
 </body>
 </html>
