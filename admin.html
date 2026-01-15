@@ -557,6 +557,9 @@ async function loadRealData() {
       
       // 渲染表格
       renderDataTable(realData);
+
+      // 更新统计信息
+  updateStatistics(realData);  // 确保这行存在
       
       // 更新状态
       updateStatus("status-online", `已加载 ${realData.length} 条真实记录`);
@@ -755,7 +758,64 @@ async function addTestRecord() {
     showLoader(false);
   }
 }
-
+// 更新统计信息
+function updateStatistics(data) {
+  if (!data || data.length === 0) {
+    // 如果没有数据，隐藏统计容器
+    const statsContainer = document.getElementById('statsContainer');
+    if (statsContainer) {
+      statsContainer.style.display = 'none';
+    }
+    return;
+  }
+  
+  // 计算统计信息
+  const totalCount = data.length;
+  const totalNTD = data.reduce((sum, item) => sum + (item.amountNTD || 0), 0);
+  const totalCNY = data.reduce((sum, item) => sum + (item.amountCNY || 0), 0);
+  const avgNTD = Math.round(totalNTD / totalCount);
+  const avgCNY = Math.round(totalCNY / totalCount);
+  
+  // 获取或创建统计容器
+  let statsContainer = document.getElementById('statsContainer');
+  if (!statsContainer) {
+    statsContainer = document.createElement('div');
+    statsContainer.id = 'statsContainer';
+    statsContainer.className = 'stats-container';
+    
+    // 插入到合适位置
+    const statusBar = document.getElementById('statusBar');
+    if (statusBar && statusBar.nextSibling) {
+      statusBar.parentNode.insertBefore(statsContainer, statusBar.nextSibling);
+    }
+  }
+  
+  // 更新统计内容
+  statsContainer.innerHTML = `
+    <div class="stat-card total">
+      <h3>📊 总记录数</h3>
+      <div class="value" id="totalCount">${totalCount}</div>
+      <div class="subtext">数据库记录</div>
+    </div>
+    <div class="stat-card amount-ntd">
+      <h3>💰 护持总金额 (台币)</h3>
+      <div class="value" id="totalAmountNTD">${totalNTD.toLocaleString()}</div>
+      <div class="subtext">平均: ${avgNTD.toLocaleString()} 元/人</div>
+    </div>
+    <div class="stat-card amount-cny">
+      <h3>💴 护持总金额 (人民币)</h3>
+      <div class="value" id="totalAmountCNY">${totalCNY.toLocaleString()}</div>
+      <div class="subtext">平均: ${avgCNY.toLocaleString()} 元/人</div>
+    </div>
+    <div class="stat-card updated">
+      <h3>🕒 最后更新时间</h3>
+      <div class="value" id="lastUpdate">${new Date().toLocaleTimeString('zh-CN')}</div>
+      <div class="subtext" id="dataSource">加载时间: ${new Date().toLocaleTimeString('zh-CN')}</div>
+    </div>
+  `;
+  
+  statsContainer.style.display = 'grid';
+}
 
 
 // 渲染数据表格
@@ -811,55 +871,63 @@ function viewInNotion(id) {
   window.open(`https://notion.so/${id.replace(/-/g, '')}`, '_blank');
 }
 
-// 删除记录
+// 删除记录 - 修复版
 async function deleteRecord(id) {
   if (!confirm('确定要删除这条记录吗？\n此操作不可恢复！')) {
     return;
   }
   
-  showLoader(true, '正在删除记录...');
+  showLoader(true, '正在处理删除请求...');
   
   try {
-    // 注意：你的API可能没有删除功能，这里提供两种方案：
+    // 首先找到要删除的记录信息
+    const recordToDelete = realData.find(item => item.id === id);
+    if (!recordToDelete) {
+      setMsg('❌ 未找到要删除的记录', 'err');
+      showLoader(false);
+      return;
+    }
     
-    // 方案1：如果API支持删除
-    // const result = await enhancedFetch(CONFIG.API_BASE + '/delete', {
-    //   method: 'DELETE',
-    //   body: JSON.stringify({ id })
-    // });
+    const recordName = recordToDelete.name || '未知记录';
     
-    // 方案2：本地模拟删除（推荐先使用这个）
-    // 模拟删除过程
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 尝试调用删除API（如果存在）
+    let apiResult;
+    try {
+      apiResult = await enhancedFetch(CONFIG.API_BASE + '/delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ id })
+      });
+      
+      console.log('删除API响应:', apiResult);
+      
+    } catch (apiError) {
+      console.log('删除API调用失败，使用本地删除:', apiError.message);
+      // API不存在或失败，使用本地删除
+      apiResult = null;
+    }
     
     // 从本地数据中移除
     const index = realData.findIndex(item => item.id === id);
     if (index !== -1) {
-      const deletedName = realData[index].name;
       realData.splice(index, 1);
       filteredData = [...realData];
-      renderDataTable(filteredData);
-      updateStatistics(realData);
       
-      setMsg(`✅ 记录"${deletedName}"已从本地移除`, 'ok', 3000);
-      console.log('记录已从本地移除，实际需要调用Notion API删除');
+      // 更新UI
+      renderDataTable(filteredData);
+      updateStatistics(realData);  // 更新统计信息
+      
+      if (apiResult && apiResult.ok) {
+        setMsg(`✅ 记录"${recordName}"已成功从数据库删除`, 'ok', 3000);
+      } else {
+        setMsg(`⚠️ 记录"${recordName}"已从本地移除（数据库删除功能未实现）`, 'warning', 3000);
+      }
     } else {
       setMsg('❌ 未找到该记录', 'err');
     }
     
-    // 如果API真的支持删除，可以这样：
-    // if (result.ok && result.data.ok) {
-    //   // 删除成功，重新加载数据
-    //   await loadRealData();
-    //   setMsg('✅ 记录删除成功！', 'ok');
-    // } else {
-    //   const errorMsg = result.data?.error || '删除失败';
-    //   setMsg(`❌ 删除失败: ${errorMsg}`, 'err');
-    // }
-    
   } catch (error) {
+    console.error('删除过程出错:', error);
     setMsg(`❌ 删除过程出错: ${error.message}`, 'err');
-    console.error('删除记录失败:', error);
   } finally {
     showLoader(false);
   }
