@@ -544,7 +544,7 @@ async function loadRealData() {
   
   try {
     // 修复：使用正确的API端点
-    const result = await enhancedFetch(CONFIG.API_BASE + "/getData");
+    const result = await enhancedFetch(CONFIG.API_BASE + "/Data");
     
     if (result.ok && result.data.ok) {
       // 保存真实数据
