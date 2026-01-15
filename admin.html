@@ -853,8 +853,11 @@ function renderDataTable(data) {
       <td style="font-size: 12px;">${timeDisplay}</td>
       <td style="text-align: center;">${notionLink}</td>
       <td class="action-buttons">
-        <button class="btn btn-danger" onclick="viewInNotion('${row.id}')" title="在Notion中查看">
+        <button class="btn btn-primary" onclick="viewInNotion('${row.id}')" title="在Notion中查看">
           查看
+        </button>
+        <button class="btn btn-danger" onclick="deleteRecord('${row.id}')" title="删除记录">
+          删除
         </button>
       </td>
     `;
@@ -865,6 +868,36 @@ function renderDataTable(data) {
 // 在Notion中查看
 function viewInNotion(id) {
   window.open(`https://notion.so/${id.replace(/-/g, '')}`, '_blank');
+}
+
+// 删除记录
+async function deleteRecord(id) {
+  if (!confirm('确定要删除这条记录吗？\n此操作不可恢复！')) {
+    return;
+  }
+  
+  showLoader(true, '正在删除记录...');
+  
+  try {
+    const result = await enhancedFetch(CONFIG.API_BASE + '/deleteData', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
+    
+    if (result.ok && result.data.ok) {
+      // 删除成功，重新加载数据
+      await loadRealData();
+      setMsg('✅ 记录删除成功！', 'ok');
+    } else {
+      const errorMsg = result.data?.error || '删除失败';
+      setMsg(`❌ 删除失败: ${errorMsg}`, 'err');
+    }
+  } catch (error) {
+    setMsg(`❌ 删除过程出错: ${error.message}`, 'err');
+    console.error('删除记录失败:', error);
+  } finally {
+    showLoader(false);
+  }
 }
 
 // 过滤表格
