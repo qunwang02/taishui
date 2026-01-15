@@ -340,30 +340,7 @@
       <span id="apiStatus" style="margin-left: 20px;"></span>
     </div>
     
-    <!-- 统计卡片 -->
-    <div id="statsContainer" class="stats-container" style="display: none;">
-      <div class="stat-card total">
-        <h3>📊 总记录数</h3>
-        <div class="value" id="totalCount">0</div>
-        <div class="subtext">共 <span id="databaseCount">0</span> 条数据库记录</div>
-      </div>
-      <div class="stat-card amount-ntd">
-        <h3>💰 护持总金额 (台币)</h3>
-        <div class="value" id="totalAmountNTD">0</div>
-        <div class="subtext">平均: <span id="avgNTD">0</span> 元/人</div>
-      </div>
-      <div class="stat-card amount-cny">
-        <h3>💴 护持总金额 (人民币)</h3>
-        <div class="value" id="totalAmountCNY">0</div>
-        <div class="subtext">平均: <span id="avgCNY">0</span> 元/人</div>
-      </div>
-      <div class="stat-card updated">
-        <h3>🕒 数据更新时间</h3>
-        <div class="value" id="lastUpdate">-</div>
-        <div class="subtext" id="dataSource">正在加载...</div>
-      </div>
-    </div>
-    
+
     <!-- 搜索框 -->
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="🔍 搜索姓名、生肖、联系人..." 
@@ -473,7 +450,6 @@ const statusText = document.getElementById("statusText");
 const dataTableBody = document.getElementById("dataTableBody");
 const noDataElement = document.getElementById("noData");
 const loader = document.getElementById("loader");
-const statsContainer = document.getElementById("statsContainer");
 const searchInput = document.getElementById("searchInput");
 const healthStatus = document.getElementById("healthStatus");
 const dataApiStatus = document.getElementById("dataApiStatus");
@@ -567,7 +543,8 @@ async function loadRealData() {
   updateStatus("status-warning", "正在加载数据...");
   
   try {
-    const result = await enhancedFetch(CONFIG.API_BASE + "/data");
+    // 修复：使用正确的API端点
+    const result = await enhancedFetch(CONFIG.API_BASE + "/getData");
     
     if (result.ok && result.data.ok) {
       // 保存真实数据
@@ -578,9 +555,6 @@ async function loadRealData() {
       
       // 渲染表格
       renderDataTable(realData);
-      
-      // 更新统计
-      updateStats(result.data);
       
       // 更新状态
       updateStatus("status-online", `已加载 ${realData.length} 条真实记录`);
@@ -618,10 +592,8 @@ async function loadRealData() {
     // 如果没有数据，显示提示
     if (realData.length === 0) {
       noDataElement.style.display = "block";
-      statsContainer.style.display = "none";
     } else {
       noDataElement.style.display = "none";
-      statsContainer.style.display = "grid";
     }
   }
 }
@@ -780,42 +752,7 @@ async function addTestRecord() {
   }
 }
 
-// 更新统计信息
-function updateStats(data) {
-  if (!data || !data.data || data.data.length === 0) {
-    statsContainer.style.display = "none";
-    return;
-  }
-  
-  statsContainer.style.display = "grid";
-  
-  const records = data.data;
-  const stats = data.stats || {
-    total: records.length,
-    totalNTD: records.reduce((sum, r) => sum + (r.amountNTD || 0), 0),
-    totalCNY: records.reduce((sum, r) => sum + (r.amountCNY || 0), 0)
-  };
-  
-  // 更新统计卡片
-  document.getElementById("totalCount").textContent = stats.total;
-  document.getElementById("databaseCount").textContent = stats.total;
-  document.getElementById("totalAmountNTD").textContent = stats.totalNTD.toLocaleString();
-  document.getElementById("totalAmountCNY").textContent = stats.totalCNY.toLocaleString();
-  
-  // 计算平均值
-  const avgNTD = stats.total > 0 ? Math.round(stats.totalNTD / stats.total) : 0;
-  const avgCNY = stats.total > 0 ? Math.round(stats.totalCNY / stats.total) : 0;
-  
-  document.getElementById("avgNTD").textContent = avgNTD.toLocaleString();
-  document.getElementById("avgCNY").textContent = avgCNY.toLocaleString();
-  
-  // 更新时间
-  const now = new Date();
-  document.getElementById("lastUpdate").textContent = 
-    `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-  
-  document.getElementById("dataSource").textContent = `来自Notion数据库 • ${stats.total}条记录`;
-}
+
 
 // 渲染数据表格
 function renderDataTable(data) {
