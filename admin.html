@@ -20,7 +20,7 @@
   }
   
   .container {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     background-color: white;
     padding: 20px;
@@ -61,10 +61,10 @@
     border: 1px solid #bee5eb;
   }
   
-  h2 {
-    color: #34495e;
-    margin-bottom: 15px;
-    font-size: 20px;
+  .warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
   }
   
   /* 按钮样式 */
@@ -81,10 +81,6 @@
     gap: 8px;
   }
   
-  .btn i {
-    font-size: 14px;
-  }
-  
   .btn-primary {
     background-color: #3498db;
     color: white;
@@ -92,15 +88,6 @@
   
   .btn-primary:hover {
     background-color: #2980b9;
-  }
-  
-  .btn-secondary {
-    background-color: #95a5a6;
-    color: white;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #7f8c8d;
   }
   
   .btn-success {
@@ -115,8 +102,6 @@
   .btn-danger {
     background-color: #e74c3c;
     color: white;
-    padding: 8px 15px;
-    font-size: 14px;
   }
   
   .btn-danger:hover {
@@ -144,7 +129,6 @@
     border: 1px solid #ddd;
     padding: 12px;
     text-align: left;
-    white-space: nowrap;
     font-size: 14px;
   }
   
@@ -165,20 +149,9 @@
     background-color: #f5f5f5;
   }
   
-  /* 无数据提示 */
-  .no-data {
-    text-align: center;
-    padding: 30px;
-    color: #666;
-    font-size: 16px;
-    background-color: #fafafa;
-    border-radius: 4px;
-    margin: 20px 0;
-  }
-  
   /* 按钮组 */
   .btn-group {
-    margin-bottom: 20px;
+    margin: 20px 0;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -222,7 +195,7 @@
   /* 统计卡片 */
   .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     margin: 20px 0;
   }
@@ -246,38 +219,26 @@
     font-weight: bold;
   }
   
+  /* 加载动画 */
+  .loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 30px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
   /* 响应式设计 */
   @media (max-width: 768px) {
-    body {
-      padding: 10px;
-    }
-    
     .container {
       padding: 15px;
-    }
-    
-    h1 {
-      font-size: 20px;
-    }
-    
-    h2 {
-      font-size: 18px;
-    }
-    
-    .btn {
-      padding: 10px 16px;
-      font-size: 14px;
-    }
-    
-    table {
-      font-size: 12px;
-      display: block;
-      overflow-x: auto;
-    }
-    
-    th, td {
-      padding: 8px;
-      font-size: 12px;
     }
     
     .btn-group {
@@ -287,6 +248,10 @@
     .btn {
       width: 100%;
     }
+    
+    .table-container {
+      overflow-x: auto;
+    }
   }
   
   /* 表格容器 */
@@ -295,22 +260,30 @@
     margin-top: 20px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
+    max-height: 500px;
+    overflow-y: auto;
   }
   
-  /* 加载动画 */
-  .loader {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
+  /* 操作按钮组 */
+  .action-buttons {
+    display: flex;
+    gap: 5px;
   }
   
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  /* 搜索框 */
+  .search-box {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .search-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
   }
 </style>
 </head>
@@ -321,7 +294,7 @@
     <!-- 状态栏 -->
     <div id="statusBar" class="msg info">
       <span id="statusIcon" class="status-indicator status-offline"></span>
-      <span id="statusText">正在检查数据库连接...</span>
+      <span id="statusText">正在连接数据库...</span>
     </div>
     
     <!-- 统计卡片 -->
@@ -344,25 +317,30 @@
       </div>
     </div>
     
+    <!-- 搜索框 -->
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索姓名、生肖或联系人..." oninput="filterTable()">
+    </div>
+    
     <!-- 消息提示 -->
     <div id="msg" class="msg"></div>
     
     <!-- 按钮组 -->
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="loadData()">
-        <span>🔄</span> 从数据库加载
+      <button class="btn btn-primary" onclick="loadDatabaseData()">
+        <span>🔄</span> 刷新数据库数据
       </button>
       <button class="btn btn-success" onclick="exportData()">
-        <span>📊</span> 导出数据
+        <span>📊</span> 导出为Excel
       </button>
-      <button class="btn btn-warning" onclick="syncToDatabase()">
-        <span>📤</span> 同步到数据库
+      <button class="btn btn-warning" onclick="testConnection()">
+        <span>🔧</span> 测试API连接
       </button>
-      <button class="btn btn-secondary" onclick="refreshLocalData()">
-        <span>💾</span> 刷新本地数据
+      <button class="btn btn-danger" onclick="testSubmitAPI()">
+        <span>🧪</span> 测试提交API
       </button>
-      <button class="btn btn-danger" onclick="clearLocalData()">
-        <span>🗑️</span> 清空本地数据
+      <button class="btn btn-warning" onclick="addTestRecord()">
+        <span>➕</span> 添加测试记录
       </button>
     </div>
     
@@ -375,12 +353,13 @@
         <thead>
           <tr>
             <th>序号</th>
+            <th>ID</th>
             <th>姓名</th>
             <th>生肖</th>
             <th>护持金额台币</th>
             <th>人民币</th>
             <th>联系人</th>
-            <th>提交时间</th>
+            <th>创建时间</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -389,41 +368,25 @@
     </div>
     
     <!-- 无数据提示 -->
-    <div id="noData" class="no-data" style="display: none;">
-      <div>📭</div>
-      <div style="margin-top: 10px;">暂无登记数据</div>
-      <div style="margin-top: 10px; font-size: 14px; color: #888;">
-        请从数据库加载或使用本地存储数据
-      </div>
+    <div id="noData" class="msg info" style="display: none;">
+      📭 数据库中没有记录，或加载失败
     </div>
     
     <!-- 返回链接 -->
     <div style="text-align: center; margin-top: 30px;">
       <a href="index.html" class="back-link">⬅️ 返回登记页面</a>
       <span style="margin: 0 10px; color: #ddd">|</span>
-      <a href="javascript:void(0)" onclick="testConnection()" class="back-link">🔧 测试连接</a>
-      <span style="margin: 0 10px; color: #ddd">|</span>
       <a href="javascript:void(0)" onclick="showDebugInfo()" class="back-link">🐛 调试信息</a>
+      <span style="margin: 0 10px; color: #ddd">|</span>
+      <a href="javascript:void(0)" onclick="clearAllData()" class="back-link" style="color: #e74c3c;">⚠️ 清空数据库(危险)</a>
     </div>
   </div>
 
 <script>
 // 配置
 const CONFIG = {
-  STORAGE_KEY: "taishui_records_2026",
-  API_BASE: window.location.origin + "/api",
-  EXCHANGE_RATE: 4.2
+  API_BASE: window.location.origin + "/api"
 };
-
-// DOM元素
-const msgElement = document.getElementById("msg");
-const statusBar = document.getElementById("statusBar");
-const statusIcon = document.getElementById("statusIcon");
-const statusText = document.getElementById("statusText");
-const dataTableBody = document.getElementById("dataTableBody");
-const noDataElement = document.getElementById("noData");
-const loader = document.getElementById("loader");
-const statsContainer = document.getElementById("statsContainer");
 
 // 生肖映射
 const ZODIAC_MAP = {
@@ -434,18 +397,25 @@ const ZODIAC_MAP = {
   "肖鸡": "肖鸡：害太岁、刑太岁"
 };
 
+// 全局变量
+let databaseData = [];
+
+// DOM元素
+const msgElement = document.getElementById("msg");
+const statusBar = document.getElementById("statusBar");
+const statusIcon = document.getElementById("statusIcon");
+const statusText = document.getElementById("statusText");
+const dataTableBody = document.getElementById("dataTableBody");
+const noDataElement = document.getElementById("noData");
+const loader = document.getElementById("loader");
+const statsContainer = document.getElementById("statsContainer");
+const searchInput = document.getElementById("searchInput");
+
 // 设置消息
 function setMsg(text, type = "") {
   msgElement.className = "msg " + type;
   msgElement.textContent = text;
   msgElement.style.display = text ? "block" : "none";
-  
-  // 自动清除消息
-  if (text && type === "ok") {
-    setTimeout(() => {
-      msgElement.style.display = "none";
-    }, 3000);
-  }
 }
 
 // 更新状态栏
@@ -459,249 +429,375 @@ function showLoader(show) {
   loader.style.display = show ? "block" : "none";
 }
 
-// 读取本地存储数据
-function readLocalData() {
+// 增强的fetch函数
+async function enhancedFetch(url, options = {}) {
+  const startTime = Date.now();
+  
   try {
-    const data = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || "[]");
-    console.log("读取本地数据:", data.length, "条记录");
-    return data;
-  } catch (e) {
-    console.error("读取本地数据失败:", e);
-    return [];
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      }
+    });
+    
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    
+    console.log(`🌐 ${options.method || 'GET'} ${url}`, {
+      status: response.status,
+      duration: `${duration}ms`,
+      ok: response.ok
+    });
+    
+    return response;
+  } catch (error) {
+    console.error(`❌ ${options.method || 'GET'} ${url}`, error);
+    throw error;
   }
 }
 
-// 写入本地存储数据
-function writeLocalData(data) {
+// 检查数据库健康状态
+async function checkDatabaseHealth() {
   try {
-    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
-    console.log("保存本地数据:", data.length, "条记录");
-    return true;
-  } catch (e) {
-    console.error("保存本地数据失败:", e);
-    return false;
-  }
-}
-
-// 清空本地数据
-function clearLocalData() {
-  if (confirm("⚠️ 确定要清空所有本地数据吗？此操作不可恢复！")) {
-    localStorage.removeItem(CONFIG.STORAGE_KEY);
-    renderDataTable([]);
-    updateStats([]);
-    setMsg("本地数据已清空", "ok");
+    const response = await enhancedFetch(CONFIG.API_BASE + "/health");
+    const data = await response.json();
+    
+    if (data.ok) {
+      updateStatus("status-online", "数据库连接正常");
+      return { success: true, data };
+    } else {
+      updateStatus("status-warning", "数据库配置有问题");
+      return { success: false, error: data.error, data };
+    }
+  } catch (error) {
+    updateStatus("status-offline", "数据库连接失败");
+    return { success: false, error: error.message };
   }
 }
 
 // 从数据库加载数据
-async function loadData() {
+async function loadDatabaseData() {
   showLoader(true);
-  updateStatus("status-warning", "正在连接数据库...");
+  setMsg("正在从数据库加载数据...", "info");
   
   try {
-    // 检查数据库连接
-    const healthRes = await fetch(CONFIG.API_BASE + "/health");
+    // 先检查数据库状态
+    const healthResult = await checkDatabaseHealth();
     
-    if (!healthRes.ok) {
-      throw new Error("数据库连接失败: " + healthRes.status);
+    if (!healthResult.success) {
+      setMsg(`数据库检查失败: ${healthResult.error}`, "err");
+      showLoader(false);
+      return;
     }
     
-    const healthData = await healthRes.json();
+    // 这里需要调用获取数据的API
+    // 由于没有专门的获取API，我们可以通过模拟来获取
+    setMsg("正在获取数据库记录...", "info");
     
-    if (healthData.ok) {
-      updateStatus("status-online", "数据库连接正常");
-      
-      // 如果有数据API，从这里获取数据
-      // 目前先使用本地数据
-      const localData = readLocalData();
-      renderDataTable(localData);
-      updateStats(localData);
-      
-      if (localData.length > 0) {
-        setMsg(`从本地加载 ${localData.length} 条记录`, "ok");
-      } else {
-        setMsg("数据库连接正常，但本地暂无数据", "info");
-      }
-    } else {
-      updateStatus("status-offline", "数据库配置错误");
-      setMsg("数据库配置错误: " + (healthData.error || "未知错误"), "err");
-      
-      // 使用本地数据作为后备
-      const localData = readLocalData();
-      if (localData.length > 0) {
-        renderDataTable(localData);
-        updateStats(localData);
-        setMsg(`使用本地数据 (${localData.length} 条记录)`, "info");
-      }
-    }
+    // 模拟数据获取（实际应该调用API）
+    // 这里我们先显示一个说明
+    databaseData = [];
+    
+    // 如果有数据API，应该这样调用：
+    // const response = await enhancedFetch(CONFIG.API_BASE + "/data");
+    // databaseData = await response.json();
+    
+    setMsg("⚠️ 注意：当前没有实现数据获取API，请使用以下方法：", "warning");
+    setMsg("1. 使用测试提交API添加记录<br>2. 在Notion数据库直接查看数据<br>3. 实现数据获取API", "warning");
+    
+    // 为了演示，添加一些示例数据
+    addSampleDataForDemo();
+    
   } catch (error) {
     console.error("加载数据失败:", error);
-    updateStatus("status-offline", "连接失败: " + error.message);
-    
-    // 使用本地数据
-    const localData = readLocalData();
-    renderDataTable(localData);
-    updateStats(localData);
-    
-    if (localData.length > 0) {
-      setMsg(`网络连接失败，使用本地数据 (${localData.length} 条记录)`, "err");
-    } else {
-      setMsg("网络连接失败，且本地无数据", "err");
-    }
+    setMsg("加载失败: " + error.message, "err");
+    updateStatus("status-offline", "加载失败");
   } finally {
     showLoader(false);
   }
 }
 
-// 同步数据到数据库
-async function syncToDatabase() {
-  const localData = readLocalData();
+// 添加示例数据（演示用）
+function addSampleDataForDemo() {
+  databaseData = [
+    {
+      id: "demo-1",
+      name: "张三",
+      zodiac: "肖马",
+      amountNTD: 1200,
+      amountCNY: 286,
+      contact: "李四",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: "demo-2",
+      name: "王五",
+      zodiac: "肖鼠",
+      amountNTD: 2400,
+      amountCNY: 571,
+      contact: "赵六",
+      createdAt: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: "demo-3",
+      name: "测试用户",
+      zodiac: "肖兔",
+      amountNTD: 1200,
+      amountCNY: 286,
+      contact: "测试联系人",
+      createdAt: new Date(Date.now() - 172800000).toISOString()
+    }
+  ];
   
-  if (localData.length === 0) {
-    setMsg("暂无数据需要同步", "info");
-    return;
-  }
-  
-  if (!confirm(`确定要将 ${localData.length} 条记录同步到数据库吗？`)) {
-    return;
-  }
-  
+  renderDataTable(databaseData);
+  updateStats(databaseData);
+  setMsg("已加载示例数据（演示用）", "info");
+}
+
+// 测试提交API
+async function testSubmitAPI() {
   showLoader(true);
-  updateStatus("status-warning", "正在同步数据...");
-  setMsg("", ""); // 清空消息
+  setMsg("正在测试提交API...", "info");
   
   try {
-    let successCount = 0;
-    let errorCount = 0;
-    const errors = [];
+    const testData = {
+      title: `测试用户_${Date.now()}`,
+      zodiac: "肖马",
+      "护持金额台币": 1200,
+      人民币: 286,
+      联系人: "测试管理员"
+    };
     
-    // 先测试API连接
-    try {
-      const testRes = await fetch(CONFIG.API_BASE + "/health");
-      if (!testRes.ok) {
-        throw new Error("API连接测试失败");
+    console.log("测试提交数据:", testData);
+    
+    const response = await enhancedFetch(CONFIG.API_BASE + "/submit", {
+      method: "POST",
+      body: JSON.stringify(testData)
+    });
+    
+    const result = await response.json();
+    console.log("测试提交响应:", result);
+    
+    if (response.ok && (result.ok || result.pageId)) {
+      setMsg(`✅ 提交API测试成功！页面ID: ${result.pageId || "N/A"}`, "ok");
+      updateStatus("status-online", "提交API正常");
+      
+      // 刷新数据
+      setTimeout(() => loadDatabaseData(), 1000);
+    } else {
+      const errorMsg = result.error || result.message || `HTTP ${response.status}`;
+      setMsg(`❌ 提交API测试失败: ${errorMsg}`, "err");
+      
+      // 显示详细的错误信息
+      if (result.error && result.error.includes("缺少列")) {
+        setMsg(`数据库字段问题: ${result.error}`, "err");
       }
-      console.log("API连接测试通过");
-    } catch (testError) {
-      throw new Error(`无法连接到API: ${testError.message}`);
     }
+  } catch (error) {
+    console.error("测试提交API异常:", error);
+    setMsg("测试提交异常: " + error.message, "err");
+    updateStatus("status-offline", "提交API异常");
+  } finally {
+    showLoader(false);
+  }
+}
+
+// 添加测试记录
+async function addTestRecord() {
+  const name = prompt("请输入测试姓名:", "测试用户_" + Date.now().toString().slice(-6));
+  if (!name) return;
+  
+  const zodiac = prompt("请选择生肖:\n1. 肖马\n2. 肖鼠\n3. 肖兔\n4. 肖牛\n5. 肖鸡", "肖马");
+  if (!zodiac) return;
+  
+  const amountStr = prompt("请输入护持金额（台币）:", "1200");
+  const amountNTD = parseInt(amountStr) || 1200;
+  const amountCNY = Math.round(amountNTD / 4.2);
+  
+  const contact = prompt("请输入联系人:", "测试联系人");
+  if (!contact) return;
+  
+  showLoader(true);
+  setMsg("正在提交测试记录...", "info");
+  
+  try {
+    const testData = {
+      title: name,
+      zodiac: zodiac,
+      "护持金额台币": amountNTD,
+      人民币: amountCNY,
+      联系人: contact
+    };
     
-    // 逐条提交数据
-    for (let i = 0; i < localData.length; i++) {
-      const record = localData[i];
+    console.log("添加测试记录:", testData);
+    
+    const response = await enhancedFetch(CONFIG.API_BASE + "/submit", {
+      method: "POST",
+      body: JSON.stringify(testData)
+    });
+    
+    const result = await response.json();
+    console.log("添加记录响应:", result);
+    
+    if (response.ok && (result.ok || result.pageId)) {
+      setMsg(`✅ 测试记录添加成功！页面ID: ${result.pageId || "N/A"}`, "ok");
+      
+      // 添加到本地数据列表
+      databaseData.unshift({
+        id: result.pageId || `temp-${Date.now()}`,
+        name: name,
+        zodiac: zodiac,
+        amountNTD: amountNTD,
+        amountCNY: amountCNY,
+        contact: contact,
+        createdAt: new Date().toISOString()
+      });
+      
+      renderDataTable(databaseData);
+      updateStats(databaseData);
+      
+    } else {
+      const errorMsg = result.error || result.message || `HTTP ${response.status}`;
+      setMsg(`❌ 添加测试记录失败: ${errorMsg}`, "err");
+    }
+  } catch (error) {
+    console.error("添加测试记录异常:", error);
+    setMsg("添加测试记录异常: " + error.message, "err");
+  } finally {
+    showLoader(false);
+  }
+}
+
+// 测试所有API连接
+async function testConnection() {
+  showLoader(true);
+  setMsg("正在测试所有API连接...", "info");
+  
+  try {
+    const tests = [
+      { name: "健康检查", url: "/health", method: "GET" },
+      { name: "提交API", url: "/submit", method: "POST" }
+    ];
+    
+    let results = [];
+    
+    for (const test of tests) {
+      const startTime = Date.now();
       
       try {
-        // 构建与index.html相同的请求数据
-        const requestData = {
-          title: String(record.name || ""),
-          zodiac: String(record.zodiac || ""),
-          "护持金额台币": Number(record.amountNTD || 0),
-          人民币: Number(record.amountCNY || 0),
-          联系人: String(record.contact || "")
-        };
-        
-        console.log(`提交第 ${i+1} 条记录:`, requestData);
-        
-        const response = await fetch(CONFIG.API_BASE + "/submit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(requestData)
-        });
-        
-        console.log(`响应状态:`, response.status);
-        
-        let result;
-        try {
-          const text = await response.text();
-          console.log(`响应内容:`, text);
-          result = text ? JSON.parse(text) : {};
-        } catch (parseError) {
-          console.log("响应不是JSON格式:", parseError);
-          result = {};
-        }
-        
-        if (response.ok && (result.ok || result.pageId)) {
-          successCount++;
-          console.log(`✅ 第 ${i+1} 条记录提交成功`);
+        if (test.method === "POST") {
+          // 对于POST测试，发送测试数据
+          const testData = {
+            title: `测试_${Date.now()}`,
+            zodiac: "肖马",
+            "护持金额台币": 1200,
+            人民币: 286,
+            联系人: "测试"
+          };
           
-          // 标记已同步的记录
-          if (!record.synced) {
-            record.synced = true;
-            record.syncedAt = new Date().toISOString();
-          }
+          const response = await fetch(CONFIG.API_BASE + test.url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(testData)
+          });
+          
+          const endTime = Date.now();
+          const result = await response.json();
+          
+          results.push({
+            name: test.name,
+            ok: response.ok,
+            status: response.status,
+            time: endTime - startTime,
+            data: result
+          });
+          
         } else {
-          errorCount++;
-          const errorMsg = result.error || result.message || `HTTP ${response.status}`;
-          errors.push(`记录 ${i + 1} (${record.name}): ${errorMsg}`);
-          console.log(`❌ 第 ${i+1} 条记录提交失败:`, errorMsg);
+          const response = await fetch(CONFIG.API_BASE + test.url);
+          const endTime = Date.now();
+          const result = await response.json();
+          
+          results.push({
+            name: test.name,
+            ok: response.ok,
+            status: response.status,
+            time: endTime - startTime,
+            data: result
+          });
         }
-        
-        // 短暂延迟，避免请求过快
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
       } catch (error) {
-        errorCount++;
-        errors.push(`记录 ${i + 1} (${record.name}): ${error.message}`);
-        console.error(`提交第 ${i+1} 条记录异常:`, error);
+        results.push({
+          name: test.name,
+          ok: false,
+          error: error.message
+        });
       }
-      
-      // 更新进度显示
-      updateStatus("status-warning", `正在同步: ${i+1}/${localData.length}`);
     }
     
-    // 保存更新后的数据（包含同步标记）
-    writeLocalData(localData);
-    
     // 显示结果
-    if (errorCount === 0) {
-      setMsg(`✅ 成功同步 ${successCount} 条记录到数据库`, "ok");
-      updateStatus("status-online", "同步完成");
-    } else {
-      setMsg(`⚠️ 同步完成: 成功 ${successCount} 条，失败 ${errorCount} 条`, "err");
-      
-      // 显示前3个错误
-      if (errors.length > 0) {
-        console.error("同步错误详情:", errors);
-        
-        if (errors.length <= 3) {
-          setMsg(`错误: ${errors.join("; ")}`, "err");
+    let message = "API连接测试结果:\n\n";
+    results.forEach(result => {
+      if (result.ok) {
+        message += `✅ ${result.name}: 正常 (${result.time}ms)\n`;
+        if (result.data && result.data.error) {
+          message += `   警告: ${result.data.error}\n`;
+        }
+      } else {
+        message += `❌ ${result.name}: 失败\n`;
+        if (result.error) {
+          message += `   错误: ${result.error}\n`;
+        } else if (result.data && result.data.error) {
+          message += `   错误: ${result.data.error}\n`;
         } else {
-          setMsg(`前3个错误: ${errors.slice(0, 3).join("; ")}...`, "err");
+          message += `   HTTP状态: ${result.status}\n`;
         }
       }
+    });
+    
+    alert(message);
+    
+    // 更新状态
+    const allOk = results.every(r => r.ok);
+    const healthOk = results.find(r => r.name === "健康检查")?.ok;
+    const submitOk = results.find(r => r.name === "提交API")?.ok;
+    
+    if (allOk) {
+      updateStatus("status-online", "所有API正常");
+    } else if (healthOk && !submitOk) {
+      updateStatus("status-warning", "提交API异常");
+    } else {
+      updateStatus("status-offline", "API连接问题");
     }
     
   } catch (error) {
-    console.error("同步过程失败:", error);
-    setMsg("同步失败: " + error.message, "err");
-    updateStatus("status-offline", "同步失败");
+    alert("测试过程出错: " + error.message);
   } finally {
     showLoader(false);
   }
 }
 
-// 导出数据
+// 导出数据为Excel
 function exportData() {
-  const data = readLocalData();
-  
-  if (data.length === 0) {
-    setMsg("暂无数据可导出", "info");
+  if (databaseData.length === 0) {
+    setMsg("没有数据可以导出", "info");
     return;
   }
   
   try {
     // 准备CSV数据
-    const headers = ["序号", "姓名", "生肖", "护持金额台币", "人民币", "联系人", "提交时间"];
+    const headers = ["序号", "姓名", "生肖", "护持金额台币", "人民币", "联系人", "创建时间"];
     const csvRows = [headers.join(",")];
     
     let totalNTD = 0;
     let totalCNY = 0;
     
-    data.forEach((row, index) => {
+    databaseData.forEach((row, index) => {
       totalNTD += row.amountNTD || 0;
       totalCNY += row.amountCNY || 0;
+      
+      const timeStr = row.createdAt ? new Date(row.createdAt).toLocaleString('zh-CN') : "-";
       
       const csvRow = [
         index + 1,
@@ -710,19 +806,18 @@ function exportData() {
         row.amountNTD || 0,
         row.amountCNY || 0,
         `"${row.contact || ""}"`,
-        `"${row.timestamp ? new Date(row.timestamp).toLocaleString() : new Date().toLocaleString()}"`
+        `"${timeStr}"`
       ];
       csvRows.push(csvRow.join(","));
     });
     
     // 添加汇总行
-    csvRows.push(""); // 空行
+    csvRows.push("");
     csvRows.push("总计,,,,,,");
     csvRows.push(`合计,${totalNTD},${totalCNY},,,,`);
-    csvRows.push(`平均,${Math.round(totalNTD/data.length)},${Math.round(totalCNY/data.length)},,,,`);
     
     // 生成CSV文件
-    const csvContent = "\uFEFF" + csvRows.join("\n"); // BOM for Excel
+    const csvContent = "\uFEFF" + csvRows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     
@@ -730,7 +825,7 @@ function exportData() {
     const link = document.createElement("a");
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     link.href = url;
-    link.download = `太岁灯数据_${timestamp}_${data.length}条.csv`;
+    link.download = `太岁灯数据_${timestamp}_${databaseData.length}条.csv`;
     link.style.display = "none";
     
     document.body.appendChild(link);
@@ -739,7 +834,7 @@ function exportData() {
     
     URL.revokeObjectURL(url);
     
-    setMsg(`✅ 成功导出 ${data.length} 条记录`, "ok");
+    setMsg(`✅ 成功导出 ${databaseData.length} 条记录`, "ok");
     
   } catch (error) {
     console.error("导出失败:", error);
@@ -747,17 +842,9 @@ function exportData() {
   }
 }
 
-// 刷新本地数据
-function refreshLocalData() {
-  const data = readLocalData();
-  renderDataTable(data);
-  updateStats(data);
-  setMsg(`刷新本地数据，共 ${data.length} 条记录`, "ok");
-}
-
 // 更新统计信息
 function updateStats(data) {
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     statsContainer.style.display = "none";
     return;
   }
@@ -778,13 +865,13 @@ function updateStats(data) {
   
   // 获取最新记录的时间
   const latestRecord = data.reduce((latest, current) => {
-    const currentTime = current.timestamp || 0;
-    const latestTime = latest.timestamp || 0;
+    const currentTime = new Date(current.createdAt || 0).getTime();
+    const latestTime = new Date(latest.createdAt || 0).getTime();
     return currentTime > latestTime ? current : latest;
-  }, { timestamp: 0 });
+  }, { createdAt: null });
   
-  if (latestRecord.timestamp) {
-    const date = new Date(latestRecord.timestamp);
+  if (latestRecord.createdAt) {
+    const date = new Date(latestRecord.createdAt);
     document.getElementById("lastUpdate").textContent = 
       `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
   } else {
@@ -808,21 +895,25 @@ function renderDataTable(data) {
     
     // 格式化时间
     let timeDisplay = "-";
-    if (row.timestamp) {
-      const date = new Date(row.timestamp);
+    if (row.createdAt) {
+      const date = new Date(row.createdAt);
       timeDisplay = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     }
     
+    // 缩短ID显示
+    const shortId = row.id ? row.id.substring(0, 8) + "..." : "-";
+    
     tr.innerHTML = `
       <td>${index + 1}</td>
+      <td title="${row.id || ''}">${shortId}</td>
       <td><strong>${row.name || ""}</strong></td>
       <td>${ZODIAC_MAP[row.zodiac] || row.zodiac || ""}</td>
-      <td style="text-align: right;">${(row.amountNTD || 0).toLocaleString()}</td>
-      <td style="text-align: right;">${(row.amountCNY || 0).toLocaleString()}</td>
+      <td style="text-align: right; color: #2ecc71;">${(row.amountNTD || 0).toLocaleString()}</td>
+      <td style="text-align: right; color: #3498db;">${(row.amountCNY || 0).toLocaleString()}</td>
       <td>${row.contact || ""}</td>
       <td>${timeDisplay}</td>
-      <td>
-        <button class="btn btn-danger" onclick="deleteRecord(${index})" title="删除">
+      <td class="action-buttons">
+        <button class="btn btn-danger" onclick="deleteRecord('${row.id}', '${row.name}')" title="删除">
           删除
         </button>
       </td>
@@ -831,78 +922,94 @@ function renderDataTable(data) {
   });
 }
 
-// 删除记录
-function deleteRecord(index) {
-  if (!confirm(`确定要删除第 ${index + 1} 条记录吗？`)) {
+// 过滤表格
+function filterTable() {
+  const searchTerm = searchInput.value.toLowerCase();
+  
+  if (!searchTerm) {
+    renderDataTable(databaseData);
     return;
   }
   
-  const localData = readLocalData();
-  const deletedItem = localData[index];
+  const filteredData = databaseData.filter(row => {
+    return (
+      (row.name && row.name.toLowerCase().includes(searchTerm)) ||
+      (row.zodiac && row.zodiac.toLowerCase().includes(searchTerm)) ||
+      (row.contact && row.contact.toLowerCase().includes(searchTerm)) ||
+      (row.amountNTD && row.amountNTD.toString().includes(searchTerm)) ||
+      (row.amountCNY && row.amountCNY.toString().includes(searchTerm))
+    );
+  });
   
-  localData.splice(index, 1);
+  renderDataTable(filteredData);
+  setMsg(`找到 ${filteredData.length} 条匹配记录`, filteredData.length > 0 ? "info" : "warning");
+}
+
+// 删除记录
+async function deleteRecord(id, name) {
+  if (!confirm(`确定要删除记录 "${name}" 吗？\n\n注意：此操作可能需要后端API支持才能从数据库删除。`)) {
+    return;
+  }
   
-  if (writeLocalData(localData)) {
-    renderDataTable(localData);
-    updateStats(localData);
-    setMsg(`已删除记录: ${deletedItem.name || "未知"}`, "ok");
-  } else {
-    setMsg("删除失败", "err");
+  showLoader(true);
+  setMsg(`正在删除记录: ${name}...`, "info");
+  
+  try {
+    // 这里应该调用删除API
+    // const response = await enhancedFetch(`${CONFIG.API_BASE}/delete/${id}`, {
+    //   method: "DELETE"
+    // });
+    
+    // 模拟删除
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // 从本地数据中移除
+    databaseData = databaseData.filter(item => item.id !== id);
+    
+    renderDataTable(databaseData);
+    updateStats(databaseData);
+    
+    setMsg(`✅ 记录 "${name}" 已从本地移除`, "ok");
+    
+  } catch (error) {
+    console.error("删除记录失败:", error);
+    setMsg("删除失败: " + error.message, "err");
+  } finally {
+    showLoader(false);
   }
 }
 
-// 测试连接
-async function testConnection() {
+// 清空数据库（危险操作）
+async function clearAllData() {
+  if (!confirm("⚠️ 危险操作！\n\n确定要清空数据库中的所有记录吗？\n此操作不可恢复！")) {
+    return;
+  }
+  
+  if (!confirm("再次确认：真的要清空所有数据吗？")) {
+    return;
+  }
+  
   showLoader(true);
-  updateStatus("status-warning", "正在测试连接...");
+  setMsg("正在清空数据库...", "warning");
   
   try {
-    const urlsToTest = [
-      { name: "健康检查", url: CONFIG.API_BASE + "/health" },
-      { name: "提交API", url: CONFIG.API_BASE + "/submit" }
-    ];
+    // 这里应该调用清空API
+    // const response = await enhancedFetch(`${CONFIG.API_BASE}/clear`, {
+    //   method: "DELETE"
+    // });
     
-    let results = [];
+    // 模拟清空
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    for (const test of urlsToTest) {
-      try {
-        const startTime = Date.now();
-        const response = await fetch(test.url, { method: 'GET' });
-        const endTime = Date.now();
-        const responseTime = endTime - startTime;
-        
-        results.push({
-          name: test.name,
-          status: response.status,
-          ok: response.ok,
-          time: responseTime
-        });
-      } catch (error) {
-        results.push({
-          name: test.name,
-          status: "ERROR",
-          ok: false,
-          error: error.message
-        });
-      }
-    }
+    databaseData = [];
+    renderDataTable(databaseData);
+    updateStats(databaseData);
     
-    let message = "连接测试结果:\n";
-    results.forEach(result => {
-      message += `\n${result.name}: ${result.ok ? "✅ 正常" : "❌ 失败"} ${result.time ? `(${result.time}ms)` : ""} ${result.error || ""}`;
-    });
-    
-    alert(message);
-    
-    if (results.every(r => r.ok)) {
-      updateStatus("status-online", "所有连接正常");
-    } else {
-      updateStatus("status-warning", "部分连接失败");
-    }
+    setMsg("✅ 数据库已清空（演示）", "ok");
     
   } catch (error) {
-    updateStatus("status-offline", "测试失败");
-    alert("测试失败: " + error.message);
+    console.error("清空数据库失败:", error);
+    setMsg("清空失败: " + error.message, "err");
   } finally {
     showLoader(false);
   }
@@ -910,74 +1017,57 @@ async function testConnection() {
 
 // 显示调试信息
 function showDebugInfo() {
-  const localData = readLocalData();
   const info = {
-    本地存储键名: CONFIG.STORAGE_KEY,
-    记录数量: localData.length,
+    页面URL: window.location.href,
     API地址: CONFIG.API_BASE,
+    数据库记录数: databaseData.length,
     用户代理: navigator.userAgent,
     当前时间: new Date().toISOString(),
-    本地存储: localStorage.getItem(CONFIG.STORAGE_KEY) ? "可用" : "空"
+    健康检查: CONFIG.API_BASE + "/health",
+    提交API: CONFIG.API_BASE + "/submit"
   };
   
   console.log("调试信息:", info);
-  alert("调试信息已输出到控制台，请按F12查看");
+  
+  let message = "调试信息:\n\n";
+  for (const [key, value] of Object.entries(info)) {
+    message += `${key}: ${value}\n`;
+  }
+  
+  alert(message + "\n详细信息请查看浏览器控制台 (F12)");
 }
 
 // 初始化
 async function init() {
-  console.log("管理页面初始化...");
-  console.log("API Base:", CONFIG.API_BASE);
-  console.log("当前域名:", window.location.origin);
+  console.log("🔄 管理页面初始化");
+  console.log("🌐 API地址:", CONFIG.API_BASE);
   
-  // 显示欢迎信息
-  setMsg("管理页面已加载", "info");
-  
-  // 加载本地数据
-  const localData = readLocalData();
-  renderDataTable(localData);
-  updateStats(localData);
-  
-  if (localData.length > 0) {
-    setMsg(`已加载 ${localData.length} 条本地记录`, "ok");
-  }
-  
-  // 自动测试数据库连接
+  // 自动检查数据库状态
   setTimeout(async () => {
-    try {
-      const response = await fetch(CONFIG.API_BASE + "/health");
-      if (response.ok) {
-        updateStatus("status-online", "数据库连接正常");
-      } else {
-        updateStatus("status-offline", "数据库连接失败");
-      }
-    } catch (error) {
-      updateStatus("status-offline", "无法连接到数据库");
-    }
+    await checkDatabaseHealth();
+  }, 500);
+  
+  // 加载示例数据
+  setTimeout(() => {
+    addSampleDataForDemo();
   }, 1000);
 }
 
 // 页面加载完成后初始化
 window.addEventListener("DOMContentLoaded", init);
 
-// 添加键盘快捷键
+// 键盘快捷键
 document.addEventListener("keydown", (e) => {
-  // Ctrl+R 刷新数据
-  if (e.ctrlKey && e.key === "r") {
+  // Ctrl+F 聚焦搜索框
+  if (e.ctrlKey && e.key === "f") {
     e.preventDefault();
-    refreshLocalData();
+    searchInput.focus();
   }
   
-  // Ctrl+E 导出数据
-  if (e.ctrlKey && e.key === "e") {
+  // F5 刷新数据
+  if (e.key === "F5") {
     e.preventDefault();
-    exportData();
-  }
-  
-  // Ctrl+S 同步到数据库
-  if (e.ctrlKey && e.key === "s") {
-    e.preventDefault();
-    syncToDatabase();
+    loadDatabaseData();
   }
 });
 </script>
