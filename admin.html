@@ -554,6 +554,7 @@ async function loadData() {
 }
 
 // 同步数据到数据库
+// 同步数据到数据库
 async function syncToDatabase() {
   const localData = readLocalData();
   
@@ -568,61 +569,113 @@ async function syncToDatabase() {
   
   showLoader(true);
   updateStatus("status-warning", "正在同步数据...");
+  setMsg("", ""); // 清空消息
   
   try {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     
+    // 先测试API连接
+    try {
+      const testRes = await fetch(CONFIG.API_BASE + "/health");
+      if (!testRes.ok) {
+        throw new Error("API连接测试失败");
+      }
+      console.log("API连接测试通过");
+    } catch (testError) {
+      throw new Error(`无法连接到API: ${testError.message}`);
+    }
+    
+    // 逐条提交数据
     for (let i = 0; i < localData.length; i++) {
       const record = localData[i];
       
       try {
+        // 构建与index.html相同的请求数据
+        const requestData = {
+          title: String(record.name || ""),
+          zodiac: String(record.zodiac || ""),
+          "护持金额台币": Number(record.amountNTD || 0),
+          人民币: Number(record.amountCNY || 0),
+          联系人: String(record.contact || "")
+        };
+        
+        console.log(`提交第 ${i+1} 条记录:`, requestData);
+        
         const response = await fetch(CONFIG.API_BASE + "/submit", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            title: record.name,
-            zodiac: record.zodiac,
-            "护持金额台币": record.amountNTD,
-            人民币: record.amountCNY,
-            联系人: record.contact
-          })
+          body: JSON.stringify(requestData)
         });
         
-        const result = await response.json();
+        console.log(`响应状态:`, response.status);
         
-        if (response.ok && result.ok) {
-          successCount++;
-        } else {
-          errorCount++;
-          errors.push(`记录 ${i + 1} (${record.name}): ${result.error || "未知错误"}`);
+        let result;
+        try {
+          const text = await response.text();
+          console.log(`响应内容:`, text);
+          result = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+          console.log("响应不是JSON格式:", parseError);
+          result = {};
         }
         
-        // 延迟避免请求过快
-        await new Promise(resolve => setTimeout(resolve, 100));
+        if (response.ok && (result.ok || result.pageId)) {
+          successCount++;
+          console.log(`✅ 第 ${i+1} 条记录提交成功`);
+          
+          // 标记已同步的记录
+          if (!record.synced) {
+            record.synced = true;
+            record.syncedAt = new Date().toISOString();
+          }
+        } else {
+          errorCount++;
+          const errorMsg = result.error || result.message || `HTTP ${response.status}`;
+          errors.push(`记录 ${i + 1} (${record.name}): ${errorMsg}`);
+          console.log(`❌ 第 ${i+1} 条记录提交失败:`, errorMsg);
+        }
+        
+        // 短暂延迟，避免请求过快
+        await new Promise(resolve => setTimeout(resolve, 200));
         
       } catch (error) {
         errorCount++;
         errors.push(`记录 ${i + 1} (${record.name}): ${error.message}`);
+        console.error(`提交第 ${i+1} 条记录异常:`, error);
       }
+      
+      // 更新进度显示
+      updateStatus("status-warning", `正在同步: ${i+1}/${localData.length}`);
     }
     
+    // 保存更新后的数据（包含同步标记）
+    writeLocalData(localData);
+    
+    // 显示结果
     if (errorCount === 0) {
       setMsg(`✅ 成功同步 ${successCount} 条记录到数据库`, "ok");
       updateStatus("status-online", "同步完成");
     } else {
       setMsg(`⚠️ 同步完成: 成功 ${successCount} 条，失败 ${errorCount} 条`, "err");
       
+      // 显示前3个错误
       if (errors.length > 0) {
         console.error("同步错误详情:", errors);
+        
+        if (errors.length <= 3) {
+          setMsg(`错误: ${errors.join("; ")}`, "err");
+        } else {
+          setMsg(`前3个错误: ${errors.slice(0, 3).join("; ")}...`, "err");
+        }
       }
     }
     
   } catch (error) {
-    console.error("同步失败:", error);
+    console.error("同步过程失败:", error);
     setMsg("同步失败: " + error.message, "err");
     updateStatus("status-offline", "同步失败");
   } finally {
