@@ -543,10 +543,12 @@ async function loadRealData() {
   updateStatus("status-warning", "正在加载数据...");
   
   try {
-    // 修复：使用正确的API端点
-    const result = await enhancedFetch(CONFIG.API_BASE + "/Data");
+    // 修复：使用正确的API端点 /data
+    const result = await enhancedFetch(CONFIG.API_BASE + "/data");
     
-    if (result.ok && result.data.ok) {
+    console.log("API响应:", result);
+    
+    if (result.ok && result.data && result.data.ok) {
       // 保存真实数据
       realData = result.data.data || [];
       filteredData = [...realData];
@@ -565,8 +567,11 @@ async function loadRealData() {
       dataApiStatus.innerHTML = '<span style="color:#2ecc71">✅ 正常 (' + realData.length + '条)</span>';
       lastCheckTime.textContent = new Date().toLocaleTimeString('zh-CN');
       
+      // 添加统计卡片显示
+      updateStatistics(realData);
+      
     } else {
-      const errorMsg = result.data?.error || "未知错误";
+      const errorMsg = result.data?.error || result.error || "未知错误";
       console.error("加载数据失败:", result);
       
       updateStatus("status-offline", "加载数据失败");
@@ -576,6 +581,9 @@ async function loadRealData() {
         '<span style="color:#f39c12">⚠️ 数据异常</span>' : 
         '<span style="color:#e74c3c">❌ 失败</span>';
       dataApiStatus.innerHTML = '<span style="color:#e74c3c">❌ 失败</span>';
+      
+      // 显示模拟数据用于测试
+      showFallbackData();
     }
     
   } catch (error) {
@@ -586,15 +594,11 @@ async function loadRealData() {
     healthStatus.innerHTML = '<span style="color:#e74c3c">❌ 连接失败</span>';
     dataApiStatus.innerHTML = '<span style="color:#e74c3c">❌ 连接失败</span>';
     
+    // 显示模拟数据用于测试
+    showFallbackData();
+    
   } finally {
     showLoader(false);
-    
-    // 如果没有数据，显示提示
-    if (realData.length === 0) {
-      noDataElement.style.display = "block";
-    } else {
-      noDataElement.style.display = "none";
-    }
   }
 }
 
