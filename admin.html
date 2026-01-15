@@ -871,13 +871,13 @@ function viewInNotion(id) {
   window.open(`https://notion.so/${id.replace(/-/g, '')}`, '_blank');
 }
 
-// 删除记录 - 修复版
+// 删除记录 - 完整版（支持数据库删除）
 async function deleteRecord(id) {
-  if (!confirm('确定要删除这条记录吗？\n此操作不可恢复！')) {
+  if (!confirm('确定要删除这条记录吗？\n此操作会从Notion数据库中永久删除！')) {
     return;
   }
   
-  showLoader(true, '正在处理删除请求...');
+  showLoader(true, '正在从数据库删除记录...');
   
   try {
     // 首先找到要删除的记录信息
@@ -890,44 +890,103 @@ async function deleteRecord(id) {
     
     const recordName = recordToDelete.name || '未知记录';
     
-    // 尝试调用删除API（如果存在）
-    let apiResult;
-    try {
-      apiResult = await enhancedFetch(CONFIG.API_BASE + '/delete', {
-        method: 'DELETE',
-        body: JSON.stringify({ id })
-      });
-      
-      console.log('删除API响应:', apiResult);
-      
-    } catch (apiError) {
-      console.log('删除API调用失败，使用本地删除:', apiError.message);
-      // API不存在或失败，使用本地删除
-      apiResult = null;
-    }
+    console.log('开始删除记录:', { id, recordName });
     
-    // 从本地数据中移除
-    const index = realData.findIndex(item => item.id === id);
-    if (index !== -1) {
-      realData.splice(index, 1);
-      filteredData = [...realData];
+    // 调用删除API
+    const apiResult = await enhancedFetch(CONFIG.API_BASE + '/delete', {
+      method: 'DELETE',
+      body: JSON.stringify({ 
+        id: id,
+        pageId: id  // 发送两种格式的ID
+      })
+    });
+    
+    console.log('删除API响应:', apiResult);
+    
+    if (apiResult.ok && apiResult.data && apiResult.data.ok) {
+      // 数据库删除成功
       
-      // 更新UI
-      renderDataTable(filteredData);
-      updateStatistics(realData);  // 更新统计信息
-      
-      if (apiResult && apiResult.ok) {
+      // 从本地数据中移除
+      const index = realData.findIndex(item => item.id === id);
+      if (index !== -1) {
+        realData.splice(index, 1);
+        filteredData = [...realData];
+        
+        // 如果记录被选中，从选中集中移除
+        if (selectedIds.has(id)) {
+          selectedIds.delete(id);
+          updateSelectionUI();
+        }
+        
+        // 更新UI
+        renderDataTable(filteredData);
+        updateStatistics(realData);
+        
         setMsg(`✅ 记录"${recordName}"已成功从数据库删除`, 'ok', 3000);
+        console.log('记录已从数据库和本地移除');
+        
       } else {
-        setMsg(`⚠️ 记录"${recordName}"已从本地移除（数据库删除功能未实现）`, 'warning', 3000);
+        // 记录已在本地不存在，但仍需刷新数据
+        await loadRealData();
+        setMsg(`✅ 记录"${recordName}"已从数据库删除，正在刷新数据...`, 'ok', 2000);
       }
+      
     } else {
-      setMsg('❌ 未找到该记录', 'err');
+      // 数据库删除失败
+      const errorMsg = apiResult.data?.error || apiResult.error || '删除失败';
+      
+      // 检查是否是API端点不存在
+      if (apiResult.status === 404 || errorMsg.includes('Not Found')) {
+        console.warn('删除API端点不存在，使用本地删除');
+        
+        // 从本地数据中移除
+        const index = realData.findIndex(item => item.id === id);
+        if (index !== -1) {
+          realData.splice(index, 1);
+          filteredData = [...realData];
+          
+          // 更新UI
+          renderDataTable(filteredData);
+          updateStatistics(realData);
+          
+          setMsg(`⚠️ 记录"${recordName}"已从本地移除（删除API未实现）`, 'warning', 3000);
+          console.log('记录已从本地移除，删除API未实现');
+        }
+        
+      } else {
+        // 其他错误
+        setMsg(`❌ 数据库删除失败: ${errorMsg}`, 'err', 5000);
+        console.error('数据库删除失败:', errorMsg);
+      }
     }
     
   } catch (error) {
     console.error('删除过程出错:', error);
-    setMsg(`❌ 删除过程出错: ${error.message}`, 'err');
+    
+    // 网络错误或其他异常
+    if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+      setMsg('❌ 网络连接失败，无法连接到删除API', 'err');
+    } else {
+      setMsg(`❌ 删除过程出错: ${error.message}`, 'err');
+    }
+    
+    // 尝试本地删除作为后备
+    try {
+      const index = realData.findIndex(item => item.id === id);
+      if (index !== -1) {
+        const recordName = realData[index].name || '未知记录';
+        realData.splice(index, 1);
+        filteredData = [...realData];
+        
+        renderDataTable(filteredData);
+        updateStatistics(realData);
+        
+        setMsg(`⚠️ 记录"${recordName}"已从本地移除（网络错误）`, 'warning', 3000);
+      }
+    } catch (fallbackError) {
+      console.error('本地删除也失败:', fallbackError);
+    }
+    
   } finally {
     showLoader(false);
   }
