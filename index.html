@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>大自在山供佛斋天祈福登记表</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "PingFang SC","Microsoft YaHei", Arial;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    padding: 15px;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+
+  .description {
+    background-color: #ecf0f1;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+    font-size: 14px;
+  }
+
+  .description p {
+    margin-bottom: 10px;
+  }
+
+  .msg {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .ok {
+    color: #0a7d33;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+  }
+
+  .err {
+    color: #b80000;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+  }
+
+  h2 {
+    color: #34495e;
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+
+  /* 登记标准区域 */
+  .standard-box {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #fff8e8;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .standard-title {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .standard-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .standard-option input[type="radio"] {
+    cursor: pointer;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 小尺寸输入框/下拉框 */
+  .small-input {
+    width: 80px;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    transition: border-color 0.3s;
+  }
+
+  .small-select {
+    width: 100px;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    transition: border-color 0.3s;
+    cursor: pointer;
+  }
+
+  .small-input:focus, .small-select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+
+  /* 表单样式 */
+  .form-row {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fafafa;
+  }
+
+  .form-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .form-row-title {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 16px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin: 8px 0 4px;
+    color: #555;
+    font-size: 14px;
+  }
+
+  input, select {
+    font-size: 16px;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+    background-color: white;
+  }
+
+  input:focus, select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+
+  input:disabled {
+    background-color: #eef1f5;
+    color: #555;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* 按钮样式 */
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+  }
+
+  .btn-primary {
+    background-color: #3498db;
+    color: white;
+    width: 100%;
+  }
+
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+
+  .btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .btn-secondary:hover {
+    background-color: #7f8c8d;
+  }
+
+  .btn-success {
+    background-color: #2ecc71;
+    color: white;
+    width: 100%;
+  }
+
+  .btn-success:hover {
+    background-color: #27ae60;
+  }
+
+  .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+
+  .btn-danger:hover {
+    background-color: #c0392b;
+  }
+
+  /* 表单操作按钮 */
+  .form-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* 检查数据库按钮 */
+  .check-db {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 480px) {
+    body {
+      padding: 10px;
+    }
+
+    .container {
+      padding: 15px;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+
+    .standard-box {
+      gap: 10px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>115年（丙午年）供佛斋天祈福登记表</h1>
+
+    <div class="description">
+      <p>供佛斋天 广植福田 消灾折安福慧双增 二十四诸天降林 龙天护法加持 福德圆满</p>
+      <p>至诚供养三宝 斋天祈福 护佑人 把福慧带回家。</p>
+      <p>欢迎认捐【福米甘露姐】一福米供着（供佛米）、甘露清（甘露水）</p>
+      <p>大自在山供常斋天法曾《福米甘露祖》认捐到12/01止。</p>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="msg" class="msg"></div>
+
+    <!-- 登记标准区域（排成一排） -->
+    <div class="standard-box">
+      <div class="standard-title">登记标准：</div>
+      
+      <label class="standard-option">
+        <input type="radio" name="standardType" value="fixed" checked onchange="onStandardTypeChange()">
+        固定金额
+      </label>
+      <input type="number" id="standardAmount" class="small-input" value="600" min="0" step="1" placeholder="金额" onchange="recalcAllAmounts()">
+
+      <label class="standard-option">
+        <input type="radio" name="standardType" value="free" onchange="onStandardTypeChange()">
+        随喜
+      </label>
+      <!-- 随喜下拉框 -->
+      <select id="freeAmountSelect" class="small-select hidden" onchange="onFreeAmountChange()">
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="150">150</option>
+        <option value="custom">自定义</option>
+      </select>
+      <!-- 随喜自定义输入框 -->
+      <input type="number" id="freeAmountCustom" class="small-input hidden" value="50" min="0" step="1" placeholder="金额" onchange="recalcAllAmounts()">
+    </div>
+
+    <!-- 登记内容 -->
+    <h2>登记内容</h2>
+
+    <!-- 表单容器 -->
+    <div id="formContainer">
+      <!-- 表单行会通过JavaScript动态生成 -->
+    </div>
+
+    <!-- 表单操作按钮 -->
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="addFormRow()">增加一行</button>
+      <button class="btn btn-success" onclick="submitForm()">提交登记</button>
+    </div>
+
+    <!-- 检查数据库按钮 -->
+    <div class="check-db">
+      <button class="btn btn-primary" onclick="checkDatabase()">检查数据库</button>
+    </div>
+
+<script>
+const API_BASE = "/api"; // Vercel 默认：/api/xxx
+const STORAGE_KEY = "taishui_records_2026"; // 本地存储键名
+
+// DOM元素
+const msgElement = document.getElementById("msg");
+const formContainer = document.getElementById("formContainer");
+const standardAmountInput = document.getElementById("standardAmount");
+const freeAmountSelect = document.getElementById("freeAmountSelect");
+const freeAmountCustom = document.getElementById("freeAmountCustom");
+
+// 设置消息
+function setMsg(text, type = "") {
+  msgElement.className = "msg " + (type || "");
+  msgElement.textContent = text;
+}
+
+// 读取本地存储数据
+function readLocalData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+// 写入本地存储数据
+function writeLocalData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// 获取当前金额标准类型
+function getStandardType() {
+  const radios = document.getElementsByName("standardType");
+  for (const radio of radios) {
+    if (radio.checked) return radio.value;
+  }
+  return "fixed";
+}
+
+// 获取标准金额（固定或随喜选定的金额）
+function getStandardAmount() {
+  const type = getStandardType();
+  if (type === "fixed") {
+    return parseFloat(standardAmountInput.value) || 0;
+  } else {
+    const selectVal = freeAmountSelect.value;
+    if (selectVal === "custom") {
+      return parseFloat(freeAmountCustom.value) || 0;
+    }
+    return parseFloat(selectVal) || 0;
+  }
+}
+
+// 金额标准类型切换
+function onStandardTypeChange() {
+  const type = getStandardType();
+  
+  if (type === "fixed") {
+    standardAmountInput.classList.remove("hidden");
+    freeAmountSelect.classList.add("hidden");
+    freeAmountCustom.classList.add("hidden");
+  } else {
+    standardAmountInput.classList.add("hidden");
+    freeAmountSelect.classList.remove("hidden");
+    // 如果当前下拉选中是自定义，显示输入框
+    if (freeAmountSelect.value === "custom") {
+      freeAmountCustom.classList.remove("hidden");
+    } else {
+      freeAmountCustom.classList.add("hidden");
+    }
+  }
+
+  // 切换时重新计算所有行的金额
+  recalcAllAmounts();
+}
+
+// 随喜下拉框变化
+function onFreeAmountChange() {
+  if (freeAmountSelect.value === "custom") {
+    freeAmountCustom.classList.remove("hidden");
+  } else {
+    freeAmountCustom.classList.add("hidden");
+  }
+  recalcAllAmounts();
+}
+
+// 重新计算所有行的护持金额
+function recalcAllAmounts() {
+  const type = getStandardType();
+  const amount = getStandardAmount();
+
+  Array.from(formContainer.children).forEach((row) => {
+    const optionSelect = row.querySelector(".option-select");
+    const qtyWrapper = row.querySelector(".qty-wrapper");
+    const qtyInput = row.querySelector(".qty-input");
+    const amountInput = row.querySelector(".amount-input");
+
+    if (!optionSelect || !qtyWrapper || !qtyInput || !amountInput) return;
+
+    const option = optionSelect.value; // "qty" 或 "free"
+
+    if (option === "qty") {
+      // 份数模式：金额 = 份数 * 标准金额
+      const qty = parseInt(qtyInput.value) || 0;
+      const total = qty * amount;
+      amountInput.value = total;
+      amountInput.disabled = true;
+    } else if (option === "free") {
+      // 随喜模式：如果标准选的是“随喜”，则带出随喜金额；如果是固定金额，则允许手动输入
+      if (type === "free") {
+        amountInput.value = amount;
+        amountInput.disabled = true;
+      } else {
+        amountInput.disabled = false;
+      }
+    }
+  });
+}
+
+// 创建表单行
+function createFormRow(index) {
+  const row = document.createElement("div");
+  row.className = "form-row";
+  row.innerHTML = `
+    <div class="form-row-header">
+      <div class="form-row-title">登记项 ${index + 1}</div>
+      ${index > 0 ? `<button class="btn btn-danger" onclick="deleteFormRow(${index})">删除</button>` : ""}
+    </div>
+
+    <div class="form-group">
+      <label>一、功德主姓名（祈福者）</label>
+      <input type="text" class="name-input" placeholder="请输入功德主姓名" required>
+    </div>
+
+    <div class="form-group">
+      <label>二、登记选项</label>
+      <select class="option-select" required onchange="onOptionChange(this)">
+        <option value="">请选择</option>
+        <option value="qty">份数</option>
+        <option value="free">随喜</option>
+      </select>
+
+      <div class="qty-wrapper hidden" style="margin-top: 10px;">
+        <label>请输入份数</label>
+        <input type="number" class="qty-input" value="1" min="1" step="1" oninput="onQtyInput(this)">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>三、护持金额（人民币）</label>
+      <input type="number" class="amount-input" value="0" min="0" step="1" placeholder="请输入金额">
+    </div>
+
+    <div class="form-group">
+      <label>四、联系人（缴费）</label>
+      <input type="text" class="contact-input" placeholder="请输入联系人姓名" required>
+    </div>
+  `;
+
+  return row;
+}
+
+// 登记选项变化
+function onOptionChange(selectEl) {
+  const row = selectEl.closest(".form-row");
+  const qtyWrapper = row.querySelector(".qty-wrapper");
+  const amountInput = row.querySelector(".amount-input");
+  const qtyInput = row.querySelector(".qty-input");
+
+  if (selectEl.value === "qty") {
+    qtyWrapper.classList.remove("hidden");
+    recalcAllAmounts();
+  } else if (selectEl.value === "free") {
+    qtyWrapper.classList.add("hidden");
+    qtyInput.value = "1";
+    
+    // 根据标准联动
+    const type = getStandardType();
+    if (type === "free") {
+      amountInput.value = getStandardAmount();
+      amountInput.disabled = true;
+    } else {
+      amountInput.disabled = false;
+    }
+  } else {
+    qtyWrapper.classList.add("hidden");
+  }
+}
+
+// 份数输入变化
+function onQtyInput(inputEl) {
+  const row = inputEl.closest(".form-row");
+  const amountInput = row.querySelector(".amount-input");
+  const type = getStandardType();
+  const amount = getStandardAmount();
+
+  if (type === "fixed") {
+    const qty = parseInt(inputEl.value) || 0;
+    amountInput.value = qty * amount;
+    amountInput.disabled = true;
+  }
+}
+
+// 初始化表单
+function initForm() {
+  formContainer.innerHTML = "";
+  addFormRow();
+}
+
+// 添加表单行
+function addFormRow() {
+  const currentRows = formContainer.children.length;
+  const newRow = createFormRow(currentRows);
+  formContainer.appendChild(newRow);
+
+  recalcAllAmounts();
+}
+
+// 删除表单行
+function deleteFormRow(index) {
+  if (formContainer.children.length > 1) {
+    formContainer.removeChild(formContainer.children[index]);
+
+    // 重新编号表单行
+    Array.from(formContainer.children).forEach((row, i) => {
+      const titleElement = row.querySelector(".form-row-title");
+      if (titleElement) {
+        titleElement.textContent = `登记项 ${i + 1}`;
+      }
+
+      // 更新删除按钮的索引
+      const deleteBtn = row.querySelector(".btn-danger");
+      if (deleteBtn) {
+        deleteBtn.onclick = function() { deleteFormRow(i); };
+      }
+    });
+
+    recalcAllAmounts();
+  } else {
+    setMsg("至少需要保留一行表单", "err");
+  }
+}
+
+// 收集表单数据
+function collectFormData() {
+  const rows = [];
+  let isValid = true;
+
+  Array.from(formContainer.children).forEach((row) => {
+    const name = row.querySelector(".name-input").value.trim();
+    const option = row.querySelector(".option-select").value;
+    const qty = parseInt(row.querySelector(".qty-input").value) || 0;
+    const amount = parseFloat(row.querySelector(".amount-input").value) || 0;
+    const contact = row.querySelector(".contact-input").value.trim();
+
+    // 验证必填项
+    if (!name || !option || !contact) {
+      isValid = false;
+      return;
+    }
+
+    if (option === "qty" && qty <= 0) {
+      isValid = false;
+      return;
+    }
+
+    // 构造 zodiac 字段以兼容后端
+    let zodiacText = "";
+    if (option === "qty") {
+      zodiacText = `份数：${qty}`;
+    } else {
+      zodiacText = "随喜";
+    }
+
+    rows.push({
+      name,
+      zodiac: zodiacText,
+      amountCNY: amount,
+      amountNTD: amount, // 兼容后端：传入人民币金额
+      contact
+    });
+  });
+
+  if (!isValid) {
+    setMsg("请填写所有必填项（姓名、登记选项、联系人）", "err");
+    return null;
+  }
+
+  return rows;
+}
+
+// 提交表单
+async function submitForm() {
+  const formData = collectFormData();
+  if (!formData) return;
+
+  setMsg("提交中...");
+
+  try {
+    // 保存到本地存储
+    const localData = readLocalData();
+    localData.push(...formData);
+    writeLocalData(localData);
+
+    // 提交到Notion
+    for (const row of formData) {
+      const resp = await fetch(API_BASE + "/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: row.name,
+          zodiac: row.zodiac,
+          "护持金额台币": row.amountNTD,
+          人民币: row.amountCNY,
+          联系人: row.contact
+        })
+      });
+
+      const result = await resp.json();
+      if (!resp.ok) {
+        throw new Error(result.error || resp.statusText);
+      }
+    }
+
+    // 清空表单
+    initForm();
+
+    setMsg("登记成功！数据已保存。", "ok");
+  } catch (e) {
+    setMsg("提交失败：" + String(e), "err");
+    console.error("提交失败：", e);
+  }
+}
+
+// 检查数据库连接
+async function checkDatabase() {
+  setMsg("检查中...");
+
+  try {
+    const resp = await fetch(API_BASE + "/health");
+    const data = await resp.json();
+
+    if (resp.ok && data.ok) {
+      setMsg("数据库连接正常！", "ok");
+    } else {
+      setMsg("数据库连接失败：" + (data.error || resp.statusText), "err");
+    }
+  } catch (e) {
+    setMsg("检查失败：" + String(e), "err");
+    console.error("检查失败：", e);
+  }
+}
+
+// 初始化
+function init() {
+  initForm();
+  onStandardTypeChange();
+}
+
+window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
