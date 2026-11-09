@@ -5,484 +5,156 @@
 <title>供佛斋天祈福数据管理</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-    line-height: 1.6;
-    padding: 20px;
+    background-color: #f8f9fa; color: #333; line-height: 1.6; padding: 20px;
   }
-  
   .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    max-width: 1200px; margin: 0 auto; background-color: white;
+    padding: 25px; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
-  
-  .header {
-    text-align: center;
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eaeaea;
-  }
-  
-  .header h1 {
-    color: #2c3e50;
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
-  
-  .header .subtitle {
-    color: #7f8c8d;
-    font-size: 14px;
-  }
-  
-  /* 状态栏 */
+  .header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea; }
+  .header h1 { color: #2c3e50; font-size: 24px; margin-bottom: 8px; }
+  .header .subtitle { color: #7f8c8d; font-size: 14px; }
   .status-bar {
-    background-color: #e8f4fd;
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 14px;
+    background-color: #e8f4fd; padding: 12px 15px; border-radius: 6px;
+    margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 14px;
   }
-  
-  .status-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  
+  .status-left { display: flex; align-items: center; gap: 10px; }
+  .status-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
   .status-online { background-color: #2ecc71; }
   .status-offline { background-color: #e74c3c; }
   .status-loading { background-color: #f39c12; animation: pulse 1.5s infinite; }
-  
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-  
-  /* 消息提示 */
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
   .message {
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    text-align: center;
-    display: none;
+    padding: 12px 15px; border-radius: 6px; margin-bottom: 15px;
+    font-size: 14px; text-align: center; display: none;
   }
-  
-  .message.show {
-    display: block;
-  }
-  
-  .message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-  
-  .message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-  }
-  
-  .message.warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-  }
-  
-  .message.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-  }
-  
-  /* 操作栏 */
+  .message.show { display: block; }
+  .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  .message.warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+  .message.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
   .action-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eaeaea;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;
   }
-  
   .btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    padding: 10px 18px; border: none; border-radius: 5px; font-size: 14px;
+    font-weight: 500; cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .btn-primary {
-    background-color: #3498db;
-    color: white;
-  }
-  
-  .btn-primary:hover:not(:disabled) {
-    background-color: #2980b9;
-  }
-  
-  .btn-danger {
-    background-color: #e74c3c;
-    color: white;
-  }
-  
-  .btn-danger:hover:not(:disabled) {
-    background-color: #c0392b;
-  }
-  
-  .btn-success {
-    background-color: #2ecc71;
-    color: white;
-  }
-  
-  .btn-success:hover:not(:disabled) {
-    background-color: #27ae60;
-  }
-  
-  .btn-warning {
-    background-color: #f39c12;
-    color: white;
-  }
-  
-  .btn-warning:hover:not(:disabled) {
-    background-color: #d68910;
-  }
-  
-  .btn-secondary {
-    background-color: #95a5a6;
-    color: white;
-  }
-  
-  .btn-secondary:hover:not(:disabled) {
-    background-color: #7f8c8d;
-  }
-  
-  /* 选择操作栏 */
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-primary { background-color: #3498db; color: white; }
+  .btn-primary:hover:not(:disabled) { background-color: #2980b9; }
+  .btn-danger { background-color: #e74c3c; color: white; }
+  .btn-danger:hover:not(:disabled) { background-color: #c0392b; }
+  .btn-success { background-color: #2ecc71; color: white; }
+  .btn-success:hover:not(:disabled) { background-color: #27ae60; }
+  .btn-warning { background-color: #f39c12; color: white; }
+  .btn-warning:hover:not(:disabled) { background-color: #d68910; }
+  .btn-secondary { background-color: #95a5a6; color: white; }
+  .btn-secondary:hover:not(:disabled) { background-color: #7f8c8d; }
   .selection-bar {
-    background-color: #f8f9fa;
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #eaeaea;
+    background-color: #f8f9fa; padding: 12px 15px; border-radius: 6px;
+    margin-bottom: 15px; display: none; justify-content: space-between;
+    align-items: center; border: 1px solid #eaeaea;
   }
-  
-  .selection-bar.show {
-    display: flex;
-  }
-  
-  .selection-info {
-    font-weight: 500;
-    color: #3498db;
-  }
-  
-  /* 搜索框 */
-  .search-box {
-    margin-bottom: 20px;
-  }
-  
+  .selection-bar.show { display: flex; }
+  .selection-info { font-weight: 500; color: #3498db; }
+  .search-box { margin-bottom: 20px; }
   .search-box input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.2s;
+    width: 100%; padding: 12px 15px; border: 1px solid #ddd;
+    border-radius: 5px; font-size: 14px; transition: border-color 0.2s;
   }
-  
-  .search-box input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-  }
-  
-  /* 表格 */
-  .table-container {
-    overflow-x: auto;
-    border: 1px solid #eaeaea;
-    border-radius: 6px;
-    background-color: white;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 800px;
-  }
-  
-  thead {
-    background-color: #f8f9fa;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  
+  .search-box input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); }
+  .table-container { overflow-x: auto; border: 1px solid #eaeaea; border-radius: 6px; background-color: white; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead { background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; }
   th {
-    padding: 14px 12px;
-    text-align: left;
-    font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #eaeaea;
-    font-size: 13px;
-    white-space: nowrap;
+    padding: 14px 12px; text-align: left; font-weight: 600;
+    color: #495057; border-bottom: 2px solid #eaeaea; font-size: 13px; white-space: nowrap;
   }
-  
-  td {
-    padding: 12px;
-    border-bottom: 1px solid #eaeaea;
-    font-size: 13px;
-    vertical-align: middle;
-  }
-  
-  tbody tr:hover {
-    background-color: #f8f9fa;
-  }
-  
-  tbody tr.selected {
-    background-color: #e3f2fd !important;
-  }
-  
-  /* 复选框 */
-  .checkbox-cell {
-    width: 40px;
-    text-align: center;
-  }
-  
-  .checkbox {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    accent-color: #3498db;
-  }
-  
-  /* 操作按钮 */
-  .action-cell {
-    white-space: nowrap;
-  }
-  
-  .action-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    border-radius: 3px;
-    border: none;
-    cursor: pointer;
-    margin: 2px;
-  }
-  
-  .action-btn.view {
-    background-color: #3498db;
-    color: white;
-  }
-  
-  .action-btn.delete {
-    background-color: #e74c3c;
-    color: white;
-  }
-  
-  /* 加载动画 */
-  .loader {
-    text-align: center;
-    padding: 40px;
-    color: #7f8c8d;
-  }
-  
+  td { padding: 12px; border-bottom: 1px solid #eaeaea; font-size: 13px; vertical-align: middle; }
+  tbody tr:hover { background-color: #f8f9fa; }
+  tbody tr.selected { background-color: #e3f2fd !important; }
+  .checkbox-cell { width: 40px; text-align: center; }
+  .checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: #3498db; }
+  .action-cell { white-space: nowrap; }
+  .action-btn { padding: 5px 10px; font-size: 12px; border-radius: 3px; border: none; cursor: pointer; margin: 2px; }
+  .action-btn.view { background-color: #3498db; color: white; }
+  .action-btn.delete { background-color: #e74c3c; color: white; }
+  .loader { text-align: center; padding: 40px; color: #7f8c8d; }
   .loader .spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+    border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%;
+    width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px;
   }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  /* 空状态 */
-  .empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    color: #7f8c8d;
-  }
-  
-  .empty-state-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    opacity: 0.5;
-  }
-  
-  /* 响应式设计 */
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .empty-state { text-align: center; padding: 50px 20px; color: #7f8c8d; }
+  .empty-state-icon { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
+  .wish-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wish-cell:hover { white-space: normal; word-break: break-all; }
   @media (max-width: 768px) {
-    body {
-      padding: 10px;
-    }
-    
-    .container {
-      padding: 15px;
-    }
-    
-    .action-bar {
-      flex-direction: column;
-    }
-    
-    .btn {
-      width: 100%;
-      justify-content: center;
-    }
-    
-    th, td {
-      padding: 10px 8px;
-      font-size: 12px;
-    }
+    body { padding: 10px; }
+    .container { padding: 15px; }
+    .action-bar { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+    th, td { padding: 10px 8px; font-size: 12px; }
   }
-  
-  /* 确认对话框 */
   .confirm-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    padding: 20px;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: none; justify-content: center;
+    align-items: center; z-index: 1000; padding: 20px;
   }
-  
-  .confirm-dialog.show {
-    display: flex;
-  }
-  
+  .confirm-dialog.show { display: flex; }
   .confirm-content {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    background: white; padding: 25px; border-radius: 8px;
+    max-width: 400px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
-  
-  .confirm-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #2c3e50;
-  }
-  
-  .confirm-message {
-    margin-bottom: 20px;
-    color: #555;
-    line-height: 1.5;
-  }
-  
-  .confirm-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
+  .confirm-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: #2c3e50; }
+  .confirm-message { margin-bottom: 20px; color: #555; line-height: 1.5; }
+  .confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
 </style>
 </head>
 <body>
   <div class="container">
-    <!-- 头部 -->
     <div class="header">
       <h1>供佛斋天祈福数据管理</h1>
       <div class="subtitle">大自在山供佛斋天法会 · 实时数据库管理</div>
     </div>
-    
-    <!-- 状态栏 -->
+
     <div class="status-bar">
       <div class="status-left">
         <span class="status-indicator status-loading" id="statusIndicator"></span>
         <span id="statusText">正在连接数据库...</span>
       </div>
-      <div>
-        记录数: <span id="recordCount">0</span>
-      </div>
+      <div>记录数: <span id="recordCount">0</span></div>
     </div>
-    
-    <!-- 消息提示 -->
+
     <div class="message" id="message"></div>
-    
-    <!-- 选择操作栏 -->
+
     <div class="selection-bar" id="selectionBar">
-      <div class="selection-info">
-        <span id="selectedCount">0</span> 项已选择
-      </div>
+      <div class="selection-info"><span id="selectedCount">0</span> 项已选择</div>
       <div>
         <button class="btn btn-danger" onclick="deleteSelected()">删除选中项</button>
         <button class="btn btn-secondary" onclick="clearSelection()">取消选择</button>
       </div>
     </div>
-    
-    <!-- 操作栏 -->
+
     <div class="action-bar">
-      <button class="btn btn-primary" onclick="loadData()">
-        <span>↻</span> 刷新数据
-      </button>
-      <button class="btn btn-success" onclick="exportData()">
-        <span>↓</span> 导出数据
-      </button>
-      <button class="btn btn-warning" onclick="selectAllRows()">
-        <span>✓</span> 全选
-      </button>
-      <button class="btn btn-warning" onclick="clearSelection()">
-        <span>✗</span> 取消全选
-      </button>
-      <button class="btn btn-secondary" onclick="addTestRecord()">
-        <span>+</span> 添加测试记录
-      </button>
+      <button class="btn btn-primary" onclick="loadData()"><span>↻</span> 刷新数据</button>
+      <button class="btn btn-success" onclick="exportData()"><span>↓</span> 导出数据</button>
+      <button class="btn btn-warning" onclick="selectAllRows()"><span>✓</span> 全选</button>
+      <button class="btn btn-warning" onclick="clearSelection()"><span>✗</span> 取消全选</button>
+      <button class="btn btn-secondary" onclick="addTestRecord()"><span>+</span> 添加测试记录</button>
     </div>
-    
-    <!-- 搜索框 -->
+
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜索姓名、生肖或联系人..." 
+      <input type="text" id="searchInput" placeholder="搜索姓名、份数/说明、祈愿内容或联系人..."
              oninput="filterTable()">
     </div>
-    
-    <!-- 表格 -->
+
     <div class="table-container">
       <table id="dataTable">
         <thead>
@@ -492,25 +164,22 @@
             </th>
             <th>序号</th>
             <th>姓名</th>
-            <th>生肖</th>
+            <th>份数/说明</th>
+            <th>祈愿内容</th>
             <th>护持金额 (人民币)</th>
             <th>联系人</th>
             <th>提交时间</th>
             <th>操作</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
-          <!-- 数据通过JavaScript动态加载 -->
-        </tbody>
+        <tbody id="tableBody"></tbody>
       </table>
-      
-      <!-- 加载状态 -->
+
       <div class="loader" id="loader">
         <div class="spinner"></div>
         <div>正在加载数据...</div>
       </div>
-      
-      <!-- 空状态 -->
+
       <div class="empty-state" id="emptyState" style="display: none;">
         <div class="empty-state-icon">📭</div>
         <div style="font-size: 16px; margin-bottom: 10px;">暂无数据</div>
@@ -518,8 +187,7 @@
       </div>
     </div>
   </div>
-  
-  <!-- 确认对话框 -->
+
   <div class="confirm-dialog" id="confirmDialog">
     <div class="confirm-content">
       <div class="confirm-title" id="confirmTitle">确认操作</div>
@@ -532,18 +200,13 @@
   </div>
 
 <script>
-// 配置
-const CONFIG = {
-  API_BASE: window.location.origin + "/api"
-};
+const CONFIG = { API_BASE: window.location.origin + "/api" };
 
-// 全局变量
-let allRecords = [];          // 所有数据库记录
-let filteredRecords = [];     // 过滤后的记录
-let selectedIds = new Set();  // 选中的记录ID
-let pendingAction = null;     // 待确认的操作
+let allRecords = [];
+let filteredRecords = [];
+let selectedIds = new Set();
+let pendingAction = null;
 
-// DOM元素
 const statusIndicator = document.getElementById('statusIndicator');
 const statusText = document.getElementById('statusText');
 const recordCount = document.getElementById('recordCount');
@@ -558,149 +221,88 @@ const confirmDialog = document.getElementById('confirmDialog');
 const confirmTitle = document.getElementById('confirmTitle');
 const confirmMessage = document.getElementById('confirmMessage');
 
-// ==================== 状态管理 ====================
-
-// 更新状态
 function updateStatus(type, text) {
   statusIndicator.className = 'status-indicator';
-  switch(type) {
-    case 'loading':
-      statusIndicator.classList.add('status-loading');
-      break;
-    case 'online':
-      statusIndicator.classList.add('status-online');
-      break;
-    case 'offline':
-      statusIndicator.classList.add('status-offline');
-      break;
-  }
+  if (type === 'loading') statusIndicator.classList.add('status-loading');
+  else if (type === 'online') statusIndicator.classList.add('status-online');
+  else if (type === 'offline') statusIndicator.classList.add('status-offline');
   statusText.textContent = text;
 }
-
-// 显示消息
 function showMessage(text, type = 'info', duration = 0) {
   message.textContent = text;
   message.className = `message ${type} show`;
-  
-  if (duration > 0) {
-    setTimeout(() => {
-      message.classList.remove('show');
-    }, duration);
-  }
+  if (duration > 0) setTimeout(() => message.classList.remove('show'), duration);
 }
+function hideMessage() { message.classList.remove('show'); }
+function showLoader() { loader.style.display = 'block'; tableBody.innerHTML = ''; }
+function hideLoader() { loader.style.display = 'none'; }
 
-// 隐藏消息
-function hideMessage() {
-  message.classList.remove('show');
-}
-
-// 显示加载状态
-function showLoader() {
-  loader.style.display = 'block';
-  tableBody.innerHTML = '';
-}
-
-// 隐藏加载状态
-function hideLoader() {
-  loader.style.display = 'none';
-}
-
-// ==================== 数据操作 ====================
-
-// 加载数据
 async function loadData() {
   showLoader();
   updateStatus('loading', '正在加载数据...');
   hideMessage();
-  
   try {
     const response = await fetch(CONFIG.API_BASE + '/data');
     const result = await response.json();
-    
     if (response.ok && result.ok) {
       allRecords = result.data || [];
       filteredRecords = [...allRecords];
-      
       renderTable();
       updateStatus('online', '数据加载完成');
       recordCount.textContent = allRecords.length;
-      
-      if (allRecords.length === 0) {
-        emptyState.style.display = 'block';
-      } else {
-        emptyState.style.display = 'none';
-      }
-      
+      emptyState.style.display = allRecords.length === 0 ? 'block' : 'none';
     } else {
       throw new Error(result.error || '加载数据失败');
     }
-    
   } catch (error) {
     console.error('加载数据失败:', error);
     updateStatus('offline', '加载失败');
     showMessage(`加载失败: ${error.message}`, 'error');
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="9" style="text-align: center; padding: 30px; color: #e74c3c;">
-          数据加载失败: ${error.message}
-        </td>
-      </tr>
-    `;
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:#e74c3c;">数据加载失败: ${error.message}</td></tr>`;
     emptyState.style.display = 'block';
   } finally {
     hideLoader();
   }
 }
 
-// 渲染表格
 function renderTable() {
   if (filteredRecords.length === 0) {
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="9" style="text-align: center; padding: 30px; color: #95a5a6;">
-          没有找到匹配的记录
-        </td>
-      </tr>
-    `;
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:#95a5a6;">没有找到匹配的记录</td></tr>`;
     return;
   }
-  
   let html = '';
-  
   filteredRecords.forEach((record, index) => {
     const isSelected = selectedIds.has(record.id);
     const time = record.created_time ? formatTime(record.created_time) : '-';
-    
+    const wish = record.wish || '';
+    const wishDisplay = wish.length > 30 ? wish.slice(0, 30) + '…' : wish;
     html += `
       <tr ${isSelected ? 'class="selected"' : ''}>
         <td class="checkbox-cell">
-          <input type="checkbox" class="checkbox" 
-                 data-id="${record.id}"
+          <input type="checkbox" class="checkbox" data-id="${record.id}"
                  ${isSelected ? 'checked' : ''}
                  onchange="toggleRowSelection('${record.id}')">
         </td>
         <td>${index + 1}</td>
         <td><strong>${escapeHtml(record.name || '')}</strong></td>
         <td>${escapeHtml(record.zodiac || '')}</td>
+        <td class="wish-cell" title="${escapeHtml(wish)}">${escapeHtml(wishDisplay)}</td>
         <td style="text-align: right; color: #2ecc71;">${formatNumber(record.amountCNY || 0)}</td>
         <td>${escapeHtml(record.contact || '')}</td>
         <td style="font-size: 12px;">${time}</td>
         <td class="action-cell">
           <button class="action-btn view" onclick="viewInNotion('${record.id}')">查看</button>
-          <button class="action-btn delete" onclick="deleteRecord('${record.id}', '${record.name}')">删除</button>
+          <button class="action-btn delete" onclick="deleteRecord('${record.id}', '${escapeHtml(record.name || '')}')">删除</button>
         </td>
       </tr>
     `;
   });
-  
   tableBody.innerHTML = html;
   updateSelectionUI();
 }
 
-// 过滤表格
 function filterTable() {
   const keyword = searchInput.value.trim().toLowerCase();
-  
   if (!keyword) {
     filteredRecords = [...allRecords];
   } else {
@@ -708,31 +310,21 @@ function filterTable() {
       return (
         (record.name && record.name.toLowerCase().includes(keyword)) ||
         (record.zodiac && record.zodiac.toLowerCase().includes(keyword)) ||
+        (record.wish && record.wish.toLowerCase().includes(keyword)) ||
         (record.contact && record.contact.toLowerCase().includes(keyword)) ||
-        (record.amountNTD && record.amountNTD.toString().includes(keyword)) ||
         (record.amountCNY && record.amountCNY.toString().includes(keyword))
       );
     });
   }
-  
   renderTable();
   recordCount.textContent = filteredRecords.length;
 }
 
-// ==================== 选择操作 ====================
-
-// 更新选择UI
 function updateSelectionUI() {
   const selected = selectedIds.size;
   selectedCount.textContent = selected;
-  
-  if (selected > 0) {
-    selectionBar.classList.add('show');
-  } else {
-    selectionBar.classList.remove('show');
-  }
-  
-  // 更新全选复选框
+  if (selected > 0) selectionBar.classList.add('show');
+  else selectionBar.classList.remove('show');
   const selectAllCheckbox = document.getElementById('selectAll');
   if (selectAllCheckbox) {
     const allVisibleIds = new Set(filteredRecords.map(r => r.id));
@@ -741,275 +333,161 @@ function updateSelectionUI() {
     selectAllCheckbox.indeterminate = selected > 0 && !allVisibleSelected;
   }
 }
-
-// 切换全选
 function toggleSelectAll(checkbox) {
   const allVisibleIds = filteredRecords.map(r => r.id);
-  
-  if (checkbox.checked) {
-    allVisibleIds.forEach(id => selectedIds.add(id));
-  } else {
-    allVisibleIds.forEach(id => selectedIds.delete(id));
-  }
-  
+  if (checkbox.checked) allVisibleIds.forEach(id => selectedIds.add(id));
+  else allVisibleIds.forEach(id => selectedIds.delete(id));
   renderTable();
 }
-
-// 全选
-function selectAllRows() {
-  filteredRecords.forEach(record => selectedIds.add(record.id));
-  renderTable();
-}
-
-// 清除选择
-function clearSelection() {
-  selectedIds.clear();
-  renderTable();
-}
-
-// 切换单行选择
+function selectAllRows() { filteredRecords.forEach(record => selectedIds.add(record.id)); renderTable(); }
+function clearSelection() { selectedIds.clear(); renderTable(); }
 function toggleRowSelection(id) {
-  if (selectedIds.has(id)) {
-    selectedIds.delete(id);
-  } else {
-    selectedIds.add(id);
-  }
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
   renderTable();
 }
 
-// ==================== 删除操作 ====================
-
-// 删除单条记录
 function deleteRecord(id, name) {
-  showConfirm(
-    '确认删除',
-    `确定要删除记录 "<strong>${escapeHtml(name)}</strong>" 吗？<br>此操作不可恢复！`,
-    async () => {
-      await performDelete(id, name);
-    }
-  );
+  showConfirm('确认删除', `确定要删除记录 "<strong>${escapeHtml(name)}</strong>" 吗？<br>此操作不可恢复！`,
+    async () => { await performDelete(id, name); });
 }
-
-// 删除选中项
 function deleteSelected() {
-  if (selectedIds.size === 0) {
-    showMessage('请先选择要删除的记录', 'warning', 3000);
-    return;
-  }
-  
-  const names = Array.from(selectedIds)
-    .map(id => {
-      const record = allRecords.find(r => r.id === id);
-      return record ? record.name : '未知记录';
-    })
-    .slice(0, 3)
-    .join(', ');
-  
+  if (selectedIds.size === 0) { showMessage('请先选择要删除的记录', 'warning', 3000); return; }
+  const names = Array.from(selectedIds).map(id => {
+    const record = allRecords.find(r => r.id === id);
+    return record ? record.name : '未知记录';
+  }).slice(0, 3).join(', ');
   const recordList = selectedIds.size > 3 ? `${names}...等` : names;
-  
-  showConfirm(
-    '批量删除确认',
+  showConfirm('批量删除确认',
     `确定要删除选中的 <strong>${selectedIds.size}</strong> 条记录吗？<br><br>涉及记录：${recordList}<br><br>此操作不可恢复！`,
-    async () => {
-      await performBatchDelete();
-    }
-  );
+    async () => { await performBatchDelete(); });
 }
-
-// 执行删除操作
 async function performDelete(id, name) {
   updateStatus('loading', '正在删除...');
   showMessage('正在删除记录...', 'info');
-  
   try {
     const response = await fetch(CONFIG.API_BASE + '/delete', {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ id: id })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
     });
-    
     const result = await response.json();
-    
     if (response.ok && result.ok) {
-      // 从本地数据中移除
       allRecords = allRecords.filter(record => record.id !== id);
       filteredRecords = [...allRecords];
       selectedIds.delete(id);
-      
-      // 更新UI
       renderTable();
       updateStatus('online', '删除成功');
       showMessage(`记录 "${name}" 删除成功`, 'success', 3000);
       recordCount.textContent = allRecords.length;
-      
     } else {
       throw new Error(result.error || '删除失败');
     }
-    
   } catch (error) {
     console.error('删除失败:', error);
     updateStatus('offline', '删除失败');
     showMessage(`删除失败: ${error.message}`, 'error', 5000);
   }
 }
-
-// 执行批量删除
 async function performBatchDelete() {
   const ids = Array.from(selectedIds);
   const total = ids.length;
-  let successCount = 0;
-  let failCount = 0;
-  
+  let successCount = 0, failCount = 0;
   updateStatus('loading', `正在批量删除 (0/${total})...`);
   showMessage(`开始批量删除 ${total} 条记录...`, 'info');
-  
   for (let i = 0; i < ids.length; i++) {
     const id = ids[i];
-    
     try {
-      // 更新进度
       updateStatus('loading', `正在批量删除 (${i + 1}/${total})...`);
-      
       const response = await fetch(CONFIG.API_BASE + '/delete', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id: id })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
       });
-      
       const result = await response.json();
-      
-      if (response.ok && result.ok) {
-        successCount++;
-      } else {
-        failCount++;
-        console.error(`删除记录 ${id} 失败:`, result.error);
-      }
-      
-    } catch (error) {
-      failCount++;
-      console.error(`删除记录 ${id} 失败:`, error);
-    }
-    
-    // 短暂延迟，避免请求过快
+      if (response.ok && result.ok) successCount++;
+      else { failCount++; console.error(`删除记录 ${id} 失败:`, result.error); }
+    } catch (error) { failCount++; console.error(`删除记录 ${id} 失败:`, error); }
     await new Promise(resolve => setTimeout(resolve, 300));
   }
-  
-  // 重新加载数据
   await loadData();
-  
-  // 显示结果
-  if (failCount === 0) {
-    showMessage(`成功删除 ${successCount} 条记录`, 'success', 5000);
-  } else {
-    showMessage(`删除完成: 成功 ${successCount} 条，失败 ${failCount} 条`, 
-                failCount === 0 ? 'success' : 'warning', 5000);
-  }
-  
+  if (failCount === 0) showMessage(`成功删除 ${successCount} 条记录`, 'success', 5000);
+  else showMessage(`删除完成: 成功 ${successCount} 条，失败 ${failCount} 条`, 'warning', 5000);
   updateStatus('online', '批量删除完成');
 }
 
-// ==================== 其他功能 ====================
-
-// 导出数据
 function exportData() {
-  if (allRecords.length === 0) {
-    showMessage('没有数据可以导出', 'warning', 3000);
-    return;
-  }
-  
+  if (allRecords.length === 0) { showMessage('没有数据可以导出', 'warning', 3000); return; }
   try {
-    // CSV表头
-	const headers = ['序号', '姓名', '说明', '护持金额', '联系人', '提交时间'];
+    // 表头：生肖 -> 份数/说明，新增祈愿内容
+    const headers = ['序号', '姓名', '份数/说明', '祈愿内容', '护持金额', '联系人', '提交时间'];
     const csvRows = [headers.join(',')];
-    
     allRecords.forEach((record, index) => {
       const time = record.created_time ? formatTime(record.created_time) : '-';
-		const row = [
-		  index + 1,
-		  `"${record.name || ''}"`,
-		  `"${record.zodiac || ''}"`,
-		  record.amountCNY || 0,
-		  `"${record.contact || ''}"`,
-		  `"${time}"`
-		];
+      const row = [
+        index + 1,
+        `"${record.name || ''}"`,
+        `"${record.zodiac || ''}"`,
+        `"${record.wish || ''}"`,
+        record.amountCNY || 0,
+        `"${record.contact || ''}"`,
+        `"${time}"`
+      ];
       csvRows.push(row.join(','));
     });
-    
-    // 创建下载链接
     const csvContent = '\uFEFF' + csvRows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    
     link.href = url;
-    link.download = `太岁灯数据_${timestamp}_${allRecords.length}条.csv`;
+    link.download = `供佛斋天祈福数据_${timestamp}_${allRecords.length}条.csv`;
     link.style.display = 'none';
-    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
     URL.revokeObjectURL(url);
-    
     showMessage(`成功导出 ${allRecords.length} 条记录`, 'success', 3000);
-    
   } catch (error) {
     console.error('导出失败:', error);
     showMessage(`导出失败: ${error.message}`, 'error', 5000);
   }
 }
 
-// 添加测试记录
 async function addTestRecord() {
   const name = prompt('请输入姓名:', `测试用户_${Date.now().toString().slice(-6)}`);
   if (!name) return;
-  
-  const zodiac = prompt('请选择生肖:', '肖马');
-  if (!zodiac) return;
-  
+  const qtyText = prompt('请输入份数/说明:', '份数：1');
+  if (!qtyText) return;
+  const wish = prompt('请输入祈愿内容:', '合家平安，事业顺利');
+  if (wish === null) return;
   const amountStr = prompt('请输入护持金额（人民币）:', '520');
   const amountCNY = parseInt(amountStr) || 520;
-  
   const contact = prompt('请输入联系人:', '测试联系人');
   if (!contact) return;
-  
+
   updateStatus('loading', '正在提交...');
   showMessage('正在提交记录...', 'info');
-  
   try {
     const response = await fetch(CONFIG.API_BASE + '/submit', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: name,
-        zodiac: zodiac,
-        "护持金额": amountCNY, // 如果你还没改后端字段，这里可以写 "护持金额台币": amountCNY
+        zodiac: qtyText,
+        wish: wish,
+        "护持金额": amountCNY,
         人民币: amountCNY,
         联系人: contact
       })
     });
-    
     const result = await response.json();
-    
     if (response.ok && (result.ok || result.pageId)) {
       showMessage('测试记录提交成功', 'success', 3000);
-      
-      // 延迟后刷新数据
-      setTimeout(() => {
-        loadData();
-      }, 1000);
-      
+      setTimeout(() => loadData(), 1000);
     } else {
       throw new Error(result.error || '提交失败');
     }
-    
   } catch (error) {
     console.error('提交失败:', error);
     showMessage(`提交失败: ${error.message}`, 'error', 5000);
@@ -1018,100 +496,43 @@ async function addTestRecord() {
   }
 }
 
-// 在Notion中查看
-function viewInNotion(id) {
-  window.open(`https://notion.so/${id.replace(/-/g, '')}`, '_blank');
-}
+function viewInNotion(id) { window.open(`https://notion.so/${id.replace(/-/g, '')}`, '_blank'); }
 
-// ==================== 工具函数 ====================
-
-// 格式化时间
 function formatTime(isoString) {
   try {
     const date = new Date(isoString);
-    return `${date.getFullYear()}/${(date.getMonth()+1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  } catch (e) {
-    return isoString;
-  }
+    return `${date.getFullYear()}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+  } catch (e) { return isoString; }
 }
-
-// 格式化数字
-function formatNumber(num) {
-  return Number(num).toLocaleString();
-}
-
-// 转义HTML
+function formatNumber(num) { return Number(num).toLocaleString(); }
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// ==================== 确认对话框 ====================
-
-// 显示确认对话框
 function showConfirm(title, message, callback) {
   confirmTitle.textContent = title;
   confirmMessage.innerHTML = message;
   pendingAction = callback;
   confirmDialog.classList.add('show');
 }
-
-// 取消确认
-function cancelConfirm() {
-  confirmDialog.classList.remove('show');
-  pendingAction = null;
-}
-
-// 执行确认操作
+function cancelConfirm() { confirmDialog.classList.remove('show'); pendingAction = null; }
 function executeConfirm() {
   confirmDialog.classList.remove('show');
-  if (pendingAction) {
-    pendingAction();
-    pendingAction = null;
-  }
+  if (pendingAction) { pendingAction(); pendingAction = null; }
 }
 
-// ==================== 初始化 ====================
-
-// 初始化
 async function init() {
-  console.log('太岁灯管理系统初始化...');
-  console.log('API地址:', CONFIG.API_BASE);
-  
-  // 自动加载数据
+  console.log('供佛斋天祈福管理系统初始化...');
   await loadData();
-  
-  // 添加键盘快捷键
   document.addEventListener('keydown', (e) => {
-    // Ctrl+F 聚焦搜索框
-    if (e.ctrlKey && e.key === 'f') {
-      e.preventDefault();
-      searchInput.focus();
-    }
-    
-    // F5 刷新
-    if (e.key === 'F5') {
-      e.preventDefault();
-      loadData();
-    }
-    
-    // Escape 清除选择
-    if (e.key === 'Escape') {
-      clearSelection();
-      searchInput.value = '';
-      filterTable();
-    }
-    
-    // Ctrl+A 全选可见项
-    if (e.ctrlKey && e.key === 'a') {
-      e.preventDefault();
-      selectAllRows();
-    }
+    if (e.ctrlKey && e.key === 'f') { e.preventDefault(); searchInput.focus(); }
+    if (e.key === 'F5') { e.preventDefault(); loadData(); }
+    if (e.key === 'Escape') { clearSelection(); searchInput.value = ''; filterTable(); }
+    if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectAllRows(); }
   });
 }
-
-// 页面加载完成后初始化
 window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
