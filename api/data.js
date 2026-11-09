@@ -26,16 +26,16 @@ export default async function handler(req, res) {
 
     const records = response.results.map(page => {
       const properties = page.properties;
-      
-      // 读取新版字段名 "护持金额"
       const amountVal = properties["护持金额"]?.number || 0;
-      
+
       return {
         id: page.id,
         name: properties["姓名"]?.title?.[0]?.text?.content || "未知",
-        zodiac: properties["生肖"]?.rich_text?.[0]?.text?.content || "未知",
-        amountCNY: amountVal, 
-        amountNTD: amountVal, // 为了兼容原来的前端变量名，依然返回此字段
+        // zodiac 现表示份数说明 / 随喜
+        zodiac: properties["生肖"]?.rich_text?.[0]?.text?.content || "",
+        wish: properties["祈愿内容"]?.rich_text?.[0]?.text?.content || "",
+        amountCNY: amountVal,
+        amountNTD: amountVal,
         contact: properties["联系人"]?.rich_text?.[0]?.text?.content || "未知",
         created_time: page.created_time,
         created_at: new Date(page.created_time).toLocaleString('zh-CN'),
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
       data: records,
       last_updated: new Date().toISOString()
     });
-    
+
   } catch (error) {
     console.error("查询失败:", error);
     return res.status(error.status || 500).json({
