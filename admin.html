@@ -291,7 +291,6 @@ function renderTable() {
         <td>${escapeHtml(record.contact || '')}</td>
         <td style="font-size: 12px;">${time}</td>
         <td class="action-cell">
-          <button class="action-btn view" onclick="viewInNotion('${record.id}')">查看</button>
           <button class="action-btn delete" onclick="deleteRecord('${record.id}', '${escapeHtml(record.name || '')}')">删除</button>
         </td>
       </tr>
